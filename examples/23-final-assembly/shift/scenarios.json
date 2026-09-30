@@ -1,0 +1,1144 @@
+{
+  "training": {
+    "snapshots": {
+      "0": {
+        "service": "search-api",
+        "window": {
+          "start": -5,
+          "end": 0
+        },
+        "observed_at": 0,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      },
+      "5": {
+        "service": "search-api",
+        "window": {
+          "start": 0,
+          "end": 5
+        },
+        "observed_at": 5,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 20
+            },
+            "pod-b": {
+              "pool_limit": 20
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.12,
+            "pool_limit": 20,
+            "pool_active": 20,
+            "pool_waiting": 35,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-a",
+            "message": "connection acquisition wait timeout 2000ms"
+          },
+          {
+            "instance": "pod-b",
+            "message": "connection acquisition wait timeout 2000ms"
+          }
+        ]
+      },
+      "10": {
+        "service": "search-api",
+        "window": {
+          "start": 5,
+          "end": 10
+        },
+        "observed_at": 10,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 20
+            },
+            "pod-b": {
+              "pool_limit": 20
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.12,
+            "pool_limit": 20,
+            "pool_active": 20,
+            "pool_waiting": 35,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-a",
+            "message": "connection acquisition wait timeout 2000ms"
+          },
+          {
+            "instance": "pod-b",
+            "message": "connection acquisition wait timeout 2000ms"
+          }
+        ]
+      },
+      "15": {
+        "service": "search-api",
+        "window": {
+          "start": 14,
+          "end": 15
+        },
+        "observed_at": 15,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": "已接收重新加载请求"
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      },
+      "20": {
+        "service": "search-api",
+        "window": {
+          "start": 15,
+          "end": 20
+        },
+        "observed_at": 20,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      },
+      "25": {
+        "service": "search-api",
+        "window": {
+          "start": 20,
+          "end": 25
+        },
+        "observed_at": 25,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      }
+    }
+  },
+  "c_short": {
+    "snapshots": {
+      "30": {
+        "service": "search-api",
+        "window": {
+          "start": 25,
+          "end": 30
+        },
+        "observed_at": 30,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      },
+      "35": {
+        "service": "search-api",
+        "window": {
+          "start": 30,
+          "end": 35
+        },
+        "observed_at": 35,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      }
+    }
+  },
+  "NI-01": {
+    "snapshots": {
+      "5": {
+        "service": "search-api",
+        "window": {
+          "start": 0,
+          "end": 5
+        },
+        "observed_at": 5,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 20
+            },
+            "pod-b": {
+              "pool_limit": 20
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.12,
+            "pool_limit": 20,
+            "pool_active": 20,
+            "pool_waiting": 35,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-a",
+            "message": "connection acquisition wait timeout 2000ms"
+          },
+          {
+            "instance": "pod-b",
+            "message": "connection acquisition wait timeout 2000ms"
+          }
+        ]
+      },
+      "10": {
+        "service": "search-api",
+        "window": {
+          "start": 5,
+          "end": 10
+        },
+        "observed_at": 10,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 20
+            },
+            "pod-b": {
+              "pool_limit": 20
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.12,
+            "pool_limit": 20,
+            "pool_active": 20,
+            "pool_waiting": 35,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-a",
+            "message": "connection acquisition wait timeout 2000ms"
+          },
+          {
+            "instance": "pod-b",
+            "message": "connection acquisition wait timeout 2000ms"
+          }
+        ]
+      }
+    }
+  },
+  "NI-02": {
+    "snapshots": {
+      "5": {
+        "service": "search-api",
+        "window": {
+          "start": 0,
+          "end": 5
+        },
+        "observed_at": 5,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.16,
+              "pool_limit": 80,
+              "pool_active": 80,
+              "pool_waiting": 22,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-b",
+            "message": "connection acquisition wait timeout 2000ms"
+          }
+        ]
+      },
+      "10": {
+        "service": "search-api",
+        "window": {
+          "start": 5,
+          "end": 10
+        },
+        "observed_at": 10,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.16,
+              "pool_limit": 80,
+              "pool_active": 80,
+              "pool_waiting": 22,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-b",
+            "message": "connection acquisition wait timeout 2000ms"
+          }
+        ]
+      }
+    }
+  },
+  "HO-01": {
+    "snapshots": {
+      "5": {
+        "service": "search-api",
+        "window": {
+          "start": 0,
+          "end": 5
+        },
+        "observed_at": 5,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      },
+      "10": {
+        "service": "search-api",
+        "window": {
+          "start": 5,
+          "end": 10
+        },
+        "observed_at": 10,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      }
+    }
+  },
+  "HO-02": {
+    "snapshots": {
+      "5": {
+        "service": "search-api",
+        "window": {
+          "start": 0,
+          "end": 5
+        },
+        "observed_at": 5,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.11,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.11
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.11,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.11
+            },
+            "pod-b": {
+              "timeout_rate": 0.11,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.11
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-a",
+            "message": "upstream request timeout; local connection acquired in 2ms"
+          }
+        ]
+      },
+      "10": {
+        "service": "search-api",
+        "window": {
+          "start": 5,
+          "end": 10
+        },
+        "observed_at": 10,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.11,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.11
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.11,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.11
+            },
+            "pod-b": {
+              "timeout_rate": 0.11,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.11
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-a",
+            "message": "upstream request timeout; local connection acquired in 2ms"
+          }
+        ]
+      }
+    }
+  },
+  "RG-01": {
+    "snapshots": {
+      "5": {
+        "service": "search-api",
+        "window": {
+          "start": 0,
+          "end": 5
+        },
+        "observed_at": -25,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      },
+      "10": {
+        "service": "search-api",
+        "window": {
+          "start": 5,
+          "end": 10
+        },
+        "observed_at": 10,
+        "available": false,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {}
+        },
+        "logs": []
+      }
+    }
+  },
+  "RG-02": {
+    "snapshots": {
+      "5": {
+        "service": "search-api",
+        "window": {
+          "start": 0,
+          "end": 5
+        },
+        "observed_at": 5,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": null
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 20
+            },
+            "pod-b": {
+              "pool_limit": 20
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.12,
+            "pool_limit": 20,
+            "pool_active": 20,
+            "pool_waiting": 35,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.12,
+              "pool_limit": 20,
+              "pool_active": 20,
+              "pool_waiting": 35,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": [
+          {
+            "instance": "pod-a",
+            "message": "connection acquisition wait timeout 2000ms"
+          },
+          {
+            "instance": "pod-b",
+            "message": "connection acquisition wait timeout 2000ms"
+          }
+        ]
+      },
+      "10": {
+        "service": "search-api",
+        "window": {
+          "start": 9,
+          "end": 10
+        },
+        "observed_at": 10,
+        "available": true,
+        "deployment": {
+          "status": "success",
+          "revision": "r17",
+          "action_receipt": "已接收重新加载请求"
+        },
+        "config": {
+          "file": {
+            "pool_limit": 80
+          },
+          "effective": {
+            "pod-a": {
+              "pool_limit": 80
+            },
+            "pod-b": {
+              "pool_limit": 80
+            }
+          }
+        },
+        "metrics": {
+          "overall": {
+            "timeout_rate": 0.002,
+            "pool_limit": 80,
+            "pool_active": 12,
+            "pool_waiting": 0,
+            "upstream_timeout_rate": 0.001
+          },
+          "instances": {
+            "pod-a": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            },
+            "pod-b": {
+              "timeout_rate": 0.002,
+              "pool_limit": 80,
+              "pool_active": 12,
+              "pool_waiting": 0,
+              "upstream_timeout_rate": 0.001
+            }
+          }
+        },
+        "logs": []
+      }
+    }
+  }
+}

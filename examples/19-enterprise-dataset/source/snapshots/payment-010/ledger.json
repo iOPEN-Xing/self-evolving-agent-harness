@@ -1,0 +1,12 @@
+[
+  {
+    "entry_id": "l10",
+    "merchant_id": "m10",
+    "order_id": "a10",
+    "amount_cents": 10000,
+    "kind": "payment",
+    "state": "posted",
+    "occurred_at": "2026-09-24T10:15:00Z",
+    "currency": "CNY"
+  }
+]

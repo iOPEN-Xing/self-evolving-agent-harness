@@ -1,0 +1,90 @@
+[
+  {
+    "id": "v2-holdout-00",
+    "event_group": "event-v2-holdout-0",
+    "split": "holdout",
+    "category": "settled",
+    "prompt": "核查商户 M-V2-HOLDOUT-00 的订单 ORD-V2-HOLDOUT-00 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-holdout-0-target",
+        "order_id": "ORD-V2-HOLDOUT-00",
+        "merchant_id": "M-V2-HOLDOUT-00",
+        "status": "SETTLED",
+        "amount_cents": 10000,
+        "business_context": "租赁押金核查：原授权撤销后重新支付，本次有效记录已有最终结算凭证。",
+        "channel_receipt": "receipt-v2-holdout-0",
+        "settlement_evidence": "ledger-v2-holdout-0"
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-HOLDOUT-00",
+      "merchant_id": "M-V2-HOLDOUT-00",
+      "paid": true,
+      "evidence_ids": [
+        "EV-v2-holdout-0-target"
+      ]
+    }
+  },
+  {
+    "id": "v2-holdout-01",
+    "event_group": "event-v2-holdout-1",
+    "split": "holdout",
+    "category": "accepted",
+    "prompt": "核查商户 M-V2-HOLDOUT-01 的订单 ORD-V2-HOLDOUT-01 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-holdout-1-target",
+        "order_id": "ORD-V2-HOLDOUT-01",
+        "merchant_id": "M-V2-HOLDOUT-01",
+        "status": "ACCEPTED",
+        "amount_cents": 10137,
+        "business_context": "公益捐款核查：聚合渠道完成签名验收，但收款机构账簿尚未取得清算凭证。",
+        "channel_receipt": "receipt-v2-holdout-1",
+        "settlement_evidence": null
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-HOLDOUT-01",
+      "merchant_id": "M-V2-HOLDOUT-01",
+      "paid": false,
+      "evidence_ids": [
+        "EV-v2-holdout-1-target"
+      ]
+    }
+  },
+  {
+    "id": "v2-holdout-02",
+    "event_group": "event-v2-holdout-2",
+    "split": "holdout",
+    "category": "cross_merchant",
+    "prompt": "核查商户 M-V2-HOLDOUT-02 的订单 ORD-V2-HOLDOUT-02 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-holdout-2-other",
+        "order_id": "ORD-V2-HOLDOUT-02",
+        "merchant_id": "M-V2-HOLDOUT-02-OTHER",
+        "status": "SETTLED",
+        "amount_cents": 3800
+      },
+      {
+        "record_id": "EV-v2-holdout-2-target",
+        "order_id": "ORD-V2-HOLDOUT-02",
+        "merchant_id": "M-V2-HOLDOUT-02",
+        "status": "ACCEPTED",
+        "amount_cents": 10274,
+        "business_context": "市集两家摊位独立收款且流水号相同，首条服饰摊已结算，目标陶艺摊仅取得受理回执。",
+        "channel_receipt": "receipt-v2-holdout-2",
+        "settlement_evidence": null
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-HOLDOUT-02",
+      "merchant_id": "M-V2-HOLDOUT-02",
+      "paid": false,
+      "evidence_ids": [
+        "EV-v2-holdout-2-target"
+      ]
+    }
+  }
+]

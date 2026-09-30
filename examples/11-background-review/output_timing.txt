@@ -1,0 +1,51 @@
+环境 HERMES_HOME = /Users/tyler/Documents/技术专栏/self-evolving-agent-harness/examples/11-background-review/.hermes-home
+模型 glm-5.2  base_url = https://open.bigmodel.cn/api/paas/v4
+
+========================================================================
+场景一：正常对话，前台先返回，复盘在后台线程执行
+========================================================================
+用户：我叫 Tyler，是一名后端工程师，日常用 Python。请记住我讨厌冗长的解释，以后回答尽量直接给结论。
+  [复盘触发] 主循环线程=MainThread 已派生 bg-review 线程
+[前台返回] 19.59s  exit=text_response(finish_reason=stop) interrupted=False
+[前台回答] '记住了，Tyler。以后直接给结论。'
+前台模型本轮自己调用 memory 工具的次数 = 2
+
+-- 前台返回瞬间，立刻清点后台线程（轮询 2s）--
+前台返回后 bg-review 线程仍存活？ True (存活 1 个)
+复盘派生时间戳 = 19.59s (晚于前台开始，紧跟在前台返回之前)
+
+-- 等待后台复盘线程完成 --
+[后台复盘完成] 25.43s  前台在 19.59s 已返回，复盘多花了 5.84s
+
+-- 对比：前台刚返回时 vs 复盘完成后，记忆文件的增量 --
+[MEMORY.md] 前台返回时 0 字节 -> 复盘完成后 0 字节
+  复盘未改写此文件（fork 可能判断 Nothing to save）
+[USER.md] 前台返回时 44 字节 -> 复盘完成后 44 字节
+  复盘未改写此文件（fork 可能判断 Nothing to save）
+
+========================================================================
+场景二：复盘开关置 0（_memory_nudge_interval=0），不触发复盘
+========================================================================
+[前台返回] 2.59s  exit=text_response(finish_reason=stop) interrupted=False
+[前台回答] '我没有联网查询天气的工具,也不知道你的位置,所以查不了实时天气。你可以看一下手机自带的天气 App,或告诉我你的城市,我帮你分析季节性气候参考。'
+复盘是否被派生？ False  (应为 False：should_review_memory=False，触发条件不满足)
+
+========================================================================
+场景三：turn 被中断（interrupted=True），不派生复盘
+========================================================================
+  [定时器] 从另一线程调用 agent.interrupt(hard_cancel=True)
+⚡ Interrupted during API call.
+[前台返回] 1.77s  exit=interrupted_during_api_call interrupted=True
+[前台回答] 'Operation interrupted: waiting for model response (1.8s elapsed).'
+复盘是否被派生？ False  (应为 False：not interrupted 守卫挡住了派生)
+
+========================================================================
+结论
+========================================================================
+1) 前台响应先返回：场景一中前台 19.59s 返回，复盘线程此后又跑了 5.84s。
+2) 复盘在后台 daemon 线程执行：recorder 在主线程抓到派生事件，真正的复盘在名为 bg-review 的 daemon 线程里跑，前台返回时它仍在存活。
+3) 触发有条件：场景二开关为 0 不触发；场景三 interrupted=True 不触发。
+
+real	0m30.639s
+user	0m1.270s
+sys	0m0.350s

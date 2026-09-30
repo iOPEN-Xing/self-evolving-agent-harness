@@ -1,0 +1,4 @@
+{"id": "excluded-interactive", "reasons": ["存在交互依赖"], "destination": "交互专项评测"}
+{"id": "excluded-choice", "reasons": ["存在交互依赖"], "destination": "交互专项评测"}
+{"id": "excluded-snapshot", "reasons": ["缺任务起点快照"], "destination": "候选区：补快照或独立标准后重新确定数据版本"}
+{"id": "excluded-ground", "reasons": ["独立标准未成熟或有争议"], "destination": "候选区：补快照或独立标准后重新确定数据版本"}

@@ -1,0 +1,8 @@
+[
+  {
+    "merchant_id": "m01",
+    "order_id": "a01",
+    "due_cents": 12000,
+    "currency": "CNY"
+  }
+]

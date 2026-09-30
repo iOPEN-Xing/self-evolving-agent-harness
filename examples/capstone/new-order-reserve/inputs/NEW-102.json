@@ -1,0 +1,13 @@
+{
+  "order_id": "NEW-102",
+  "amount_due": 750,
+  "transactions": [
+    {
+      "txn_id": "N-T3",
+      "amount": 750,
+      "status": "processing",
+      "channel_acceptance": "success"
+    }
+  ],
+  "prompt": "核实付款状态、有效已付、差额及是否具备进入确认队列的条件。"
+}

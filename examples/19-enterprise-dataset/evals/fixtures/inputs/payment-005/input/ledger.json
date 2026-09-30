@@ -1,0 +1,22 @@
+[
+  {
+    "entry_id": "l05",
+    "merchant_id": "m05",
+    "order_id": "a05",
+    "amount_cents": 10000,
+    "kind": "payment",
+    "state": "posted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  },
+  {
+    "entry_id": "l05",
+    "merchant_id": "m05",
+    "order_id": "a05",
+    "amount_cents": 10000,
+    "kind": "payment",
+    "state": "posted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  }
+]

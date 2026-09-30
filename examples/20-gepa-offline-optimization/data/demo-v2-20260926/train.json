@@ -1,0 +1,90 @@
+[
+  {
+    "id": "v2-train-00",
+    "event_group": "event-v2-train-0",
+    "split": "train",
+    "category": "settled",
+    "prompt": "核查商户 M-V2-TRAIN-00 的订单 ORD-V2-TRAIN-00 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-train-0-target",
+        "order_id": "ORD-V2-TRAIN-00",
+        "merchant_id": "M-V2-TRAIN-00",
+        "status": "SETTLED",
+        "amount_cents": 10000,
+        "business_context": "网店订单核查：银行电子回单与当前支付记录一致，账簿已结算。",
+        "channel_receipt": "receipt-v2-train-0",
+        "settlement_evidence": "ledger-v2-train-0"
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-TRAIN-00",
+      "merchant_id": "M-V2-TRAIN-00",
+      "paid": true,
+      "evidence_ids": [
+        "EV-v2-train-0-target"
+      ]
+    }
+  },
+  {
+    "id": "v2-train-01",
+    "event_group": "event-v2-train-1",
+    "split": "train",
+    "category": "accepted",
+    "prompt": "核查商户 M-V2-TRAIN-01 的订单 ORD-V2-TRAIN-01 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-train-1-target",
+        "order_id": "ORD-V2-TRAIN-01",
+        "merchant_id": "M-V2-TRAIN-01",
+        "status": "ACCEPTED",
+        "amount_cents": 10137,
+        "business_context": "预约扣款核查：渠道接受预约，但约定扣款时点尚未到来。",
+        "channel_receipt": "receipt-v2-train-1",
+        "settlement_evidence": null
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-TRAIN-01",
+      "merchant_id": "M-V2-TRAIN-01",
+      "paid": false,
+      "evidence_ids": [
+        "EV-v2-train-1-target"
+      ]
+    }
+  },
+  {
+    "id": "v2-train-02",
+    "event_group": "event-v2-train-2",
+    "split": "train",
+    "category": "cross_merchant",
+    "prompt": "核查商户 M-V2-TRAIN-02 的订单 ORD-V2-TRAIN-02 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-train-2-other",
+        "order_id": "ORD-V2-TRAIN-02",
+        "merchant_id": "M-V2-TRAIN-02-OTHER",
+        "status": "SETTLED",
+        "amount_cents": 3800
+      },
+      {
+        "record_id": "EV-v2-train-2-target",
+        "order_id": "ORD-V2-TRAIN-02",
+        "merchant_id": "M-V2-TRAIN-02",
+        "status": "ACCEPTED",
+        "amount_cents": 10274,
+        "business_context": "同一园区两家独立商户各自编号，咖啡店已结算，目标书店还在受理中。",
+        "channel_receipt": "receipt-v2-train-2",
+        "settlement_evidence": null
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-TRAIN-02",
+      "merchant_id": "M-V2-TRAIN-02",
+      "paid": false,
+      "evidence_ids": [
+        "EV-v2-train-2-target"
+      ]
+    }
+  }
+]

@@ -1,0 +1,14 @@
+id: payment-006
+title: 退款后净额
+input:
+  prompt: 核对 input/ 中本次请求范围的支付状态，逐个订单返回约定 JSON 报告。
+context:
+  repo_fixture: evals/fixtures/inputs/payment-006
+constraints:
+  timeout_seconds: 300
+expect:
+  exit_code: 0
+judge:
+  type: script
+  script_path: evals/grader-only/payment-006.py
+  timeout_seconds: 30

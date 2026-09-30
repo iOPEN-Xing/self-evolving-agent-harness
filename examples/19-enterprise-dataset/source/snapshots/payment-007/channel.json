@@ -1,0 +1,10 @@
+[
+  {
+    "receipt_id": "r07",
+    "merchant_id": "m07",
+    "order_id": "a07",
+    "state": "failed",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  }
+]

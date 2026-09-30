@@ -1,0 +1,6 @@
+{
+  "event_groups_disjoint": true,
+  "normalized_records_unique": true,
+  "checked_examples": 10,
+  "scope": "三类任务共有相同字段，但使用不同业务事件和背景材料；只能观察机制，不能证明生产泛化"
+}

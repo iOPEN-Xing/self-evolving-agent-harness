@@ -1,0 +1,43 @@
+schema_version: v1alpha1
+environment:
+  type: none
+skills:
+- source: local_path
+  path: skill/payment-report
+  target: skills/payment-report
+  include:
+  - SKILL.md
+engine:
+  name: course-legacy
+  custom:
+    transport: local
+    conversation_mode: batch
+    response_format: session_result
+    timeout_seconds: 630
+    local:
+      command: python3
+      args:
+      - scripts/engine.py
+      - --variant
+      - legacy
+      - --input
+      - ${input_file}
+      - --output
+      - ${output_file}
+      output_file: engine/session-result.json
+cases:
+  files:
+  - evals/cases/payment-001.yaml
+  - evals/cases/payment-002.yaml
+  - evals/cases/payment-004.yaml
+  - evals/cases/payment-010.yaml
+  parallelism: 1
+  retry_policy:
+    max_retries: 0
+benchmark:
+  enabled: false
+report:
+  formats:
+  - json
+  artifacts:
+  - transcript

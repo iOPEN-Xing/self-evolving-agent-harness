@@ -1,0 +1,14 @@
+{
+  "ORD-A1": {"amount_due": 1000, "transactions": [
+    {"txn_id": "TXN-A", "amount": 600, "status": "success"},
+    {"txn_id": "TXN-B", "amount": 400, "status": "processing"}]},
+  "ORD-A2": {"amount_due": 800, "transactions": [
+    {"txn_id": "TXN-X", "amount": 800, "status": "processing",
+     "channel_acceptance": "success", "scenario": "accepted_then_processing"}]},
+  "ORD-B1": {"amount_due": 900, "transactions": [
+    {"txn_id": "TXN-Y", "amount": 450, "status": "success"},
+    {"txn_id": "TXN-Z", "amount": 450, "status": "success"}]},
+  "ORD-B2": {"amount_due": 500, "transactions": [
+    {"txn_id": "TXN-W", "amount": 500, "status": "success"}],
+    "merchant_notification": "merchant_notification_missing"}
+}

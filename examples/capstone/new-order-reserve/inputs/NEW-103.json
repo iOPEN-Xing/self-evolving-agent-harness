@@ -1,0 +1,12 @@
+{
+  "order_id": "NEW-103",
+  "amount_due": 650,
+  "transactions": [
+    {
+      "txn_id": "N-T4",
+      "amount": 650,
+      "status": "success"
+    }
+  ],
+  "prompt": "核实付款状态、有效已付、差额及是否具备进入确认队列的条件。"
+}

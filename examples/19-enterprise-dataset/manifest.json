@@ -1,0 +1,329 @@
+{
+  "schema": "course-manifest-v1",
+  "dataset_name": "payment-report-teaching",
+  "dataset_version": "2026-09-26T00:00:00Z",
+  "provenance": {
+    "kind": "教学作者构造",
+    "is_real_langfuse_export": false,
+    "description": "沿用 dataset item 常见字段的教学 JSON；附加 schema/provenance 是课程字段。没有从真实租户采集。",
+    "documentation": "https://langfuse.com/docs/evaluation/experiments/datasets"
+  },
+  "converter_sha256": "7bff327e605a28b38d8925f5450893e16cbf48b4e02925bb263f2284da2381ec",
+  "grader_sha256": "1bde9a2893ac90b040ebf508ceed07bc34a2afab50a0ce8c13a11bd9a2db4c61",
+  "skill_sha256": "45848378541f3bd255000a18a6c8324d8d278edcd130db1ae05b8f02b0b8977f",
+  "independent_cases": 12,
+  "cases": [
+    {
+      "case_id": "payment-001",
+      "source_item_id": "payment-001",
+      "source_trace_id": "teaching-trace-001",
+      "source_observation_id": "teaching-root-001",
+      "session_id": "teaching-session-001",
+      "request_id": "req-001",
+      "stratum": "普通到账",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-001",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "9d8cb468a6904854343983b77521152f904e9c84a21de1c207bff61c173adcdc",
+        "orders": "46e53f44b165d977b133a9a96fcfeb66173a9f69e3ea11fbf5db07a04a23ead3",
+        "ledger": "ae3e7d8389b85da674425cea9a4299041b7c6c23b01fd6bb8d6abedd1eb103fd",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-001",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-002",
+      "source_item_id": "payment-002",
+      "source_trace_id": "teaching-trace-002",
+      "source_observation_id": "teaching-root-002",
+      "session_id": "teaching-session-002",
+      "request_id": "req-002",
+      "stratum": "受理未终结",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-002",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "c815b19dffcca9f383df218d5bae0f160dd1fcd8f7f731a4c6e5fff8dd6e68fd",
+        "orders": "c9895c3d87565b9911b1f485fafb4e58e8163c5d8c27a2396f765f10609592e7",
+        "ledger": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "channel": "c6e3e8668e723fc18722a4ec3fb11b029557ac9ccd9d7a95836ddd7f3c2c45d1"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-002",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-003",
+      "source_item_id": "payment-003",
+      "source_trace_id": "teaching-trace-003",
+      "source_observation_id": "teaching-root-003",
+      "session_id": "teaching-session-003",
+      "request_id": "req-003",
+      "stratum": "部分付款",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-003",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "ea19943abd64d35a56bd9b9932f268aa1e58c374247e9b779d835a460f2f1b1d",
+        "orders": "086bfa12885dde500e74b664d772238d3c86ba076c0a80ba6d5833bab3b246f1",
+        "ledger": "2d22fb889b89814643d33fb96523fd9639d66520d284fabdbadece5aeff61ae9",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 0,
+        "mature": true,
+        "event_id": "teaching-event-003",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-004",
+      "source_item_id": "payment-004",
+      "source_trace_id": "teaching-trace-004",
+      "source_observation_id": "teaching-root-004",
+      "session_id": "teaching-session-004",
+      "request_id": "req-004",
+      "stratum": "跨商户同号",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-004",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "468fbdf36dc2e01924627b593e9c5e196bc60cc558d9eccc830c3e8617d3a106",
+        "orders": "8a5516d77f72c0a048a7f8c23239164a52d8308ca5774fe94873a8b7c751de45",
+        "ledger": "bec1e9768204cf9548a4582f677a57806a3ac5a71090d51d6388230e9d04028a",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-004",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-005",
+      "source_item_id": "payment-005",
+      "source_trace_id": "teaching-trace-005",
+      "source_observation_id": "teaching-root-005",
+      "session_id": "teaching-session-005",
+      "request_id": "req-005",
+      "stratum": "重复账务事件",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-005",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "dcf70da1a85ce0dcd8fd99f92035faf892b192e602bc026c0d9b6224cb7e043d",
+        "orders": "af697f7e64256d7c8526c95f4c5077991c2b855695b3b6239a5d412ccea03475",
+        "ledger": "1d6b48d5cd0228bb25f6f8062399d59249f56081a21dcd7b85f105ecabe5e7a5",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-005",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-006",
+      "source_item_id": "payment-006",
+      "source_trace_id": "teaching-trace-006",
+      "source_observation_id": "teaching-root-006",
+      "session_id": "teaching-session-006",
+      "request_id": "req-006",
+      "stratum": "退款后净额",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-006",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "8c4cfc928673b3ed06b26c9ca0b560e8aac12afcf3b0f94b43f7637e5d9bb6c0",
+        "orders": "3d5f8a67dea702f759412c28d6cea00ff80dbeab10bb3e148e9ab01c8c81820a",
+        "ledger": "045e93700cc970c0786a3689005e44a3fdc470dbedb459b68072bd38a1a4fe8a",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 0,
+        "mature": true,
+        "event_id": "teaching-event-006",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-007",
+      "source_item_id": "payment-007",
+      "source_trace_id": "teaching-trace-007",
+      "source_observation_id": "teaching-root-007",
+      "session_id": "teaching-session-007",
+      "request_id": "req-007",
+      "stratum": "付款失败",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-007",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "a4674d1d345d4aaa74e9061c18d480573c2d6208817776282eacf10b26772475",
+        "orders": "9148db0ecc2f8e567e4a460eb256b0e208887b71670003b8fcf9067edc2e8686",
+        "ledger": "2c8d25dadbf43a3ad372160e6db2ead1c9030fa9e0225be7b41e3d4d69f21c43",
+        "channel": "1f4bd15cb1ebfdb44cb7b872111b24c0c4dbd27adcb80d6a50bb341a186419b1"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-007",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-008",
+      "source_item_id": "payment-008",
+      "source_trace_id": "teaching-trace-008",
+      "source_observation_id": "teaching-root-008",
+      "session_id": "teaching-session-008",
+      "request_id": "req-008",
+      "stratum": "超额付款",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-008",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "84c9cf41dd2471cefa9eeff77a2efb7ce228dab214c8bac207ff6d348c0f931b",
+        "orders": "cfc9d4c59bfa27163abe8e712fbe25793a5e6635711cbc47c6a8f9aadc51f853",
+        "ledger": "5401ead32fa734b22ed8ad51a6ebabf69fc53fdf3135bfe39df3cb4a36813eb4",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-008",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-009",
+      "source_item_id": "payment-009",
+      "source_trace_id": "teaching-trace-009",
+      "source_observation_id": "teaching-root-009",
+      "session_id": "teaching-session-009",
+      "request_id": "req-009",
+      "stratum": "多订单范围",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-009",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "a7782571da37fbecb954dcea2ed3974103e678e6ce8b0fe6f57bd35e313fa812",
+        "orders": "e30e470e41c8de5e1e1ffdb8782850bc293f3325b6044c7bf08ead15d0b511d2",
+        "ledger": "0cae6a3c119d940bb578a17da365363acb6ba191404dc90742c052a639f169fb",
+        "channel": "166d0755a291c00983391e01c8b3e329a203f83dba5f56a892da14c3564b8d23"
+      },
+      "historical_feedback": {
+        "accepted": 0,
+        "mature": true,
+        "event_id": "teaching-event-009",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-010",
+      "source_item_id": "payment-010",
+      "source_trace_id": "teaching-trace-010",
+      "source_observation_id": "teaching-root-010",
+      "session_id": "teaching-session-010",
+      "request_id": "req-010",
+      "stratum": "查询截止后到账排除",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-010",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "72a72ee56123edd035f444a5f7b921c393fedd7f32ee57dd7a1cd54e71da5500",
+        "orders": "3ead9f6d83d93b5370a2862f8be37d40e35a827826aa39be084635f4e09bc185",
+        "ledger": "5f474b3900e597d5363a9bf43b6be7a2b74d4de2ea5eacb9cf0b10e005760156",
+        "channel": "6de7388ce91940f9d51c8fd90a8d19a5c436e6d918e91aa4958d6df611a55460"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-010",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-011",
+      "source_item_id": "payment-011",
+      "source_trace_id": "teaching-trace-011",
+      "source_observation_id": "teaching-root-011",
+      "session_id": "teaching-session-011",
+      "request_id": "req-011",
+      "stratum": "跨币种记录",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-011",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "f03f3e1ff96359c6f77de239bc785e467f263870e5d4aa412f21b09aeab2a52f",
+        "orders": "73cf76637752f110bc5f1148bd34c9252d3635a210ec8a3683de2c222db61fb3",
+        "ledger": "3fe0adb9d3ad3f47fb2db1fa5c7dc171c650df9a497a77a25a95f3a433a47549",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 1,
+        "mature": true,
+        "event_id": "teaching-event-011",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    },
+    {
+      "case_id": "payment-012",
+      "source_item_id": "payment-012",
+      "source_trace_id": "teaching-trace-012",
+      "source_observation_id": "teaching-root-012",
+      "session_id": "teaching-session-012",
+      "request_id": "req-012",
+      "stratum": "多笔付款与漏单",
+      "split": "teaching_evaluation",
+      "truth_source": "teaching-ledger-facts:payment-012",
+      "truth_valid_at": "2026-09-24T10:00:00Z",
+      "snapshot_hashes": {
+        "request": "ccc5569684f767b4ccaa3b9b957dacfbf31d6a4180e3a0a5d1b947fea9165ac2",
+        "orders": "aa3cd5f27540024382916c2a5e47a2959f5f2f70f70880f2e6449657cc944a99",
+        "ledger": "9046d1564447b05d72abeb4b7a95f4efcc5c521f69e925f698b18ecc14eed465",
+        "channel": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "historical_feedback": {
+        "accepted": 0,
+        "mature": true,
+        "event_id": "teaching-event-012",
+        "window_hours": 24,
+        "source": "教学业务反馈表",
+        "observed_at": "2026-09-25T11:00:00Z"
+      }
+    }
+  ]
+}

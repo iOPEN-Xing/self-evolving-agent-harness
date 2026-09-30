@@ -1,0 +1,14 @@
+{
+  "orders": [
+    {
+      "merchant_id": "m05",
+      "order_id": "a05",
+      "effective_paid_cents": 10000,
+      "difference_cents": 0,
+      "status": "paid",
+      "evidence_ids": [
+        "l05"
+      ]
+    }
+  ]
+}

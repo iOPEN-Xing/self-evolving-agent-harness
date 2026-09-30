@@ -1,0 +1,13 @@
+diff --git a/internal/judge/interpreter.go b/internal/judge/interpreter.go
+index 0693419..fa4c2eb 100644
+--- a/internal/judge/interpreter.go
++++ b/internal/judge/interpreter.go
+@@ -191,7 +191,7 @@ func judgeTempDir(targetGOOS string) string {
+ 	if targetGOOS == platform.GOOSWindows {
+ 		return filepath.Join(os.TempDir(), name)
+ 	}
+-	return path.Join("/tmp", name)
++	return path.Join(os.TempDir(), name)
+ }
+ 
+ // joinForGOOS joins path elements using the separator of the target OS.

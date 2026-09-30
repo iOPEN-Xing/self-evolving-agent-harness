@@ -1,0 +1,12 @@
+[
+  {
+    "entry_id": "l07",
+    "merchant_id": "m07",
+    "order_id": "a07",
+    "amount_cents": 6000,
+    "kind": "payment",
+    "state": "failed",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "entry_id": "l12a",
+    "merchant_id": "m12",
+    "order_id": "a12",
+    "amount_cents": 2500,
+    "kind": "payment",
+    "state": "posted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  },
+  {
+    "entry_id": "l12b",
+    "merchant_id": "m12",
+    "order_id": "a12",
+    "amount_cents": 2500,
+    "kind": "payment",
+    "state": "posted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  }
+]

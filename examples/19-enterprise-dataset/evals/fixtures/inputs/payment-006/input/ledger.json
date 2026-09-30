@@ -1,0 +1,22 @@
+[
+  {
+    "entry_id": "l06",
+    "merchant_id": "m06",
+    "order_id": "a06",
+    "amount_cents": 10000,
+    "kind": "payment",
+    "state": "posted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  },
+  {
+    "entry_id": "r06",
+    "merchant_id": "m06",
+    "order_id": "a06",
+    "amount_cents": 3000,
+    "kind": "refund",
+    "state": "posted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  }
+]

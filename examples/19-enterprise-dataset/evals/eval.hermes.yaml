@@ -1,0 +1,51 @@
+schema_version: v1alpha1
+environment:
+  type: none
+skills:
+- source: local_path
+  path: skill/payment-report
+  target: skills/payment-report
+  include:
+  - SKILL.md
+engine:
+  name: course-hermes
+  custom:
+    transport: local
+    conversation_mode: batch
+    response_format: session_result
+    timeout_seconds: 300
+    local:
+      command: python3
+      args:
+      - scripts/engine.py
+      - --variant
+      - hermes
+      - --input
+      - ${input_file}
+      - --output
+      - ${output_file}
+      output_file: engine/session-result.json
+cases:
+  files:
+  - evals/cases/payment-001.yaml
+  - evals/cases/payment-002.yaml
+  - evals/cases/payment-003.yaml
+  - evals/cases/payment-004.yaml
+  - evals/cases/payment-005.yaml
+  - evals/cases/payment-006.yaml
+  - evals/cases/payment-007.yaml
+  - evals/cases/payment-008.yaml
+  - evals/cases/payment-009.yaml
+  - evals/cases/payment-010.yaml
+  - evals/cases/payment-011.yaml
+  - evals/cases/payment-012.yaml
+  parallelism: 1
+  retry_policy:
+    max_retries: 0
+benchmark:
+  enabled: false
+report:
+  formats:
+  - json
+  artifacts:
+  - transcript

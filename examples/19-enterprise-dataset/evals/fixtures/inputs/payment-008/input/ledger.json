@@ -1,0 +1,12 @@
+[
+  {
+    "entry_id": "l08",
+    "merchant_id": "m08",
+    "order_id": "a08",
+    "amount_cents": 13000,
+    "kind": "payment",
+    "state": "posted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  }
+]

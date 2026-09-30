@@ -1,0 +1,23 @@
+{
+  "orders": [
+    {
+      "merchant_id": "m12",
+      "order_id": "a12",
+      "effective_paid_cents": 5000,
+      "difference_cents": 5000,
+      "status": "partial",
+      "evidence_ids": [
+        "l12a",
+        "l12b"
+      ]
+    },
+    {
+      "merchant_id": "m12",
+      "order_id": "b12",
+      "effective_paid_cents": 0,
+      "difference_cents": 2000,
+      "status": "unpaid",
+      "evidence_ids": []
+    }
+  ]
+}

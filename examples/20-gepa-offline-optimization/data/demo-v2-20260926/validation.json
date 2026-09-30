@@ -1,0 +1,90 @@
+[
+  {
+    "id": "v2-validation-00",
+    "event_group": "event-v2-validation-0",
+    "split": "validation",
+    "category": "settled",
+    "prompt": "核查商户 M-V2-VALIDATION-00 的订单 ORD-V2-VALIDATION-00 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-validation-0-target",
+        "order_id": "ORD-V2-VALIDATION-00",
+        "merchant_id": "M-V2-VALIDATION-00",
+        "status": "SETTLED",
+        "amount_cents": 10000,
+        "business_context": "停车场补缴核查：闸机离线，联网补传后银行已确认入账。",
+        "channel_receipt": "receipt-v2-validation-0",
+        "settlement_evidence": "ledger-v2-validation-0"
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-VALIDATION-00",
+      "merchant_id": "M-V2-VALIDATION-00",
+      "paid": true,
+      "evidence_ids": [
+        "EV-v2-validation-0-target"
+      ]
+    }
+  },
+  {
+    "id": "v2-validation-01",
+    "event_group": "event-v2-validation-1",
+    "split": "validation",
+    "category": "accepted",
+    "prompt": "核查商户 M-V2-VALIDATION-01 的订单 ORD-V2-VALIDATION-01 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-validation-1-target",
+        "order_id": "ORD-V2-VALIDATION-01",
+        "merchant_id": "M-V2-VALIDATION-01",
+        "status": "ACCEPTED",
+        "amount_cents": 10137,
+        "business_context": "展会报名付款核查：订单登记成功，银行异步清算尚未完成。",
+        "channel_receipt": "receipt-v2-validation-1",
+        "settlement_evidence": null
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-VALIDATION-01",
+      "merchant_id": "M-V2-VALIDATION-01",
+      "paid": false,
+      "evidence_ids": [
+        "EV-v2-validation-1-target"
+      ]
+    }
+  },
+  {
+    "id": "v2-validation-02",
+    "event_group": "event-v2-validation-2",
+    "split": "validation",
+    "category": "cross_merchant",
+    "prompt": "核查商户 M-V2-VALIDATION-02 的订单 ORD-V2-VALIDATION-02 当前是否到账。请调用工具后按 Skill 指定的 JSON 格式回答。",
+    "records": [
+      {
+        "record_id": "EV-v2-validation-2-other",
+        "order_id": "ORD-V2-VALIDATION-02",
+        "merchant_id": "M-V2-VALIDATION-02-OTHER",
+        "status": "SETTLED",
+        "amount_cents": 3800
+      },
+      {
+        "record_id": "EV-v2-validation-2-target",
+        "order_id": "ORD-V2-VALIDATION-02",
+        "merchant_id": "M-V2-VALIDATION-02",
+        "status": "ACCEPTED",
+        "amount_cents": 10274,
+        "business_context": "两家展馆票务商采用相同流水编号，无关票务商已结算，目标票务商仅受理。",
+        "channel_receipt": "receipt-v2-validation-2",
+        "settlement_evidence": null
+      }
+    ],
+    "expected": {
+      "order_id": "ORD-V2-VALIDATION-02",
+      "merchant_id": "M-V2-VALIDATION-02",
+      "paid": false,
+      "evidence_ids": [
+        "EV-v2-validation-2-target"
+      ]
+    }
+  }
+]

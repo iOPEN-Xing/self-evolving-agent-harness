@@ -1,0 +1,10 @@
+[
+  {
+    "receipt_id": "r10",
+    "merchant_id": "m10",
+    "order_id": "a10",
+    "state": "accepted",
+    "occurred_at": "2026-09-24T09:00:00Z",
+    "currency": "CNY"
+  }
+]

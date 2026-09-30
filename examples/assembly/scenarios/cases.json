@@ -1,0 +1,57 @@
+[
+  {
+    "case_id": "ORD-A1",
+    "prompt": "帮我查一下订单 ORD-A1 的付款情况，判断有没有付清、接下来该怎么处理。",
+    "business_correct": false,
+    "conclusion": "未付清，还差 400；TXN-A 600 成功，TXN-B 400 仍在处理中",
+    "key_points": {
+      "amount_due_1000": true,
+      "paid_success_600": true,
+      "remaining_400": true,
+      "one_processing": true,
+      "not_paid_off": true
+    },
+    "must_not_say": ["已付清", "已结清", "可以关单"]
+  },
+  {
+    "case_id": "ORD-A2",
+    "prompt": "订单 ORD-A2 现在是什么状态？算付成功了吗？",
+    "business_correct": false,
+    "conclusion": "800 交易仍在 processing，但渠道已受理成功；未最终到账，需等待确认，既不能直接判已付清，也不能判失败",
+    "key_points": {
+      "amount_800": true,
+      "status_processing": true,
+      "channel_accepted": true,
+      "not_final_paid": true,
+      "need_wait_or_poll": true
+    },
+    "must_not_say": ["已付清", "支付失败", "可以退款"]
+  },
+  {
+    "case_id": "ORD-B1",
+    "prompt": "查一下 ORD-B1 结清了没有。",
+    "business_correct": true,
+    "conclusion": "已付清；两笔各 450 均成功，合计 900，与应缴一致，可关单",
+    "key_points": {
+      "amount_due_900": true,
+      "two_success_450": true,
+      "total_900": true,
+      "paid_off": true
+    },
+    "must_not_say": ["未付清", "还差"]
+  },
+  {
+    "case_id": "ORD-B2",
+    "prompt": "ORD-B2 商户说没收到付款通知，帮我核实款项到底到没到。",
+    "business_correct": true,
+    "conclusion": "500 款项已成功到账，订单已付清；缺的是商户通知，需补发通知或对账，不能把通知缺失当成未付款",
+    "key_points": {
+      "amount_500": true,
+      "txn_success": true,
+      "paid_off": true,
+      "notification_missing": true,
+      "need_resend_notification": true
+    },
+    "must_not_say": ["未付款", "没到账"]
+  }
+]
