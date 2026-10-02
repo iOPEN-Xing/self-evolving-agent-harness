@@ -40,7 +40,6 @@ scripts/__pycache__/
 
 # 内部工作清单、单测与运行临时目录，不随练习发布
 /download.txt
-/tests/
 **/consolidate_runs/
 
 # 作者自查材料与执行输出，仅保留在本地
