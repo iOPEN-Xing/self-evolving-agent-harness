@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """第 11 讲练习：后台复盘是异步 best-effort，不阻塞前台。
 
-用真实的 Hermes AIAgent + glm-5.2 跑一个对话，分别观察：
+用真实的 Hermes AIAgent + deepseek-flash 跑一个对话，分别观察：
   1. 前台返回时后台是否仍在运行；前台无需等待复盘。
   2. 实际启动的线程是否为 daemon；线程结束、工具结果和文件变化分别记录。
   3. 本练习观察两个阻止触发的条件：同时关闭 Memory/Skill 自动检查；turn 被中断。
@@ -17,7 +17,7 @@ _should_review_skills 由 agent._skill_nudge_interval 控制。
 
 运行环境（由 run.sh 负责）：
   - unset 所有代理
-  - export GLM_API_KEY / GLM_BASE_URL（脚本从 env 读，不硬编码 key）
+  - export DEEPSEEK_API_KEY / DEEPSEEK_BASE_URL（脚本从 env 读，不硬编码 key）
   - HERMES_HOME 指向本目录下的 .hermes-home，避免污染真实配置
 """
 import os
@@ -152,21 +152,22 @@ def review_tool_results(events):
 
 
 def main():
-    api_key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
-    base_url = os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
     if not api_key:
-        print("ERROR: 需要先 export GLM_API_KEY（或 BIGMODEL_API_KEY，见 run.sh）", file=sys.stderr)
+        print("ERROR: 需要先 export DEEPSEEK_API_KEY（见本章 run.sh）", file=sys.stderr)
         sys.exit(1)
 
     print("环境 HERMES_HOME =", os.environ["HERMES_HOME"])
-    print("模型 glm-5.2  base_url =", base_url)
+    print("模型 deepseek-flash  base_url =", base_url)
 
     # ------------------------------------------------------------------
     # 构造前台 agent。nudge_interval 设为 1：每一轮都满足 should_review_memory。
     # ------------------------------------------------------------------
     agent = AIAgent(
-        model="glm-5.2",
-        provider="glm",
+        reasoning_config={"enabled": False},
+        model="deepseek-flash",
+        provider="deepseek",
         api_key=api_key,
         base_url=base_url,
         quiet_mode=True,

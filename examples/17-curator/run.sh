@@ -7,7 +7,7 @@ unset http_proxy https_proxy all_proxy no_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
 case "${1:-lifecycle}" in
   lifecycle) SCRIPT=run_lab17.py ;;
   consolidate)
-    : "${GLM_API_KEY:-${BIGMODEL_API_KEY:?需要设置 GLM_API_KEY 或 BIGMODEL_API_KEY}}"
+    : "${DEEPSEEK_API_KEY:?需要设置 DEEPSEEK_API_KEY}"
     SCRIPT=run_lab17_consolidate.py ;;
   *) printf '用法：bash run.sh lifecycle 或 bash run.sh consolidate\n' >&2; exit 2 ;;
 esac

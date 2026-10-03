@@ -51,3 +51,7 @@ scripts/__pycache__/
 /examples/validate_notebooks.py
 /examples/test_notebook_quality.py
 /scripts/check_entrypoints.py
+
+# New execution evidence stays local; historical tracked files retain provenance.
+**/output/
+**/.hermes-home/

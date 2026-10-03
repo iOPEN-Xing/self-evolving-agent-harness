@@ -21,10 +21,10 @@ def digest(raw):
     return hashlib.sha256(raw).hexdigest()
 
 def invoke(payload, probe=False):
-    key = os.environ.get('GLM_API_KEY', '')
-    base = os.environ.get('GLM_BASE_URL', '')
+    key = os.environ.get('DEEPSEEK_API_KEY', '')
+    base = os.environ.get('DEEPSEEK_BASE_URL', '')
     if not probe and (not key or not base):
-        return dict(exit_code=78, final_message='须显式设置 GLM_API_KEY 和 GLM_BASE_URL；未发起模型请求。', transcript=[])
+        return dict(exit_code=78, final_message='须显式设置 DEEPSEEK_API_KEY 和 DEEPSEEK_BASE_URL；未发起模型请求。', transcript=[])
     runtime = Path(os.environ['COURSE_RUNTIME_DIR'])
     runtime.mkdir(parents=True, exist_ok=True)
     home = runtime / 'hermes-home'
@@ -101,7 +101,7 @@ def invoke(payload, probe=False):
     AIAgent._build_keepalive_http_client = staticmethod(observed_http_builder)
     run_id = 'hermes-' + uuid.uuid4().hex
     machine = '这是由程序解析的机器接口。完整 Skill 和当题四张只读快照均已预载，无须再调用工具。只输出约定格式的纯 JSON，所有解释写入 explanation 字段，不写分析前后缀或代码围栏。无用户后续答复，不得凭空补充资料。'
-    agent = AIAgent(model='glm-5.2', base_url=base, api_key=key, provider='custom', api_mode='chat_completions',
+    agent = AIAgent(model='deepseek-flash', base_url=base, api_key=key, provider='custom', api_mode='chat_completions',
                     enabled_toolsets=[], max_iterations=1, max_tokens=4096,
                     request_overrides={'response_format':{'type':'json_object'}, 'temperature':0,
                                        'extra_body':{'thinking':{'type':'disabled'}}},
@@ -124,7 +124,7 @@ def invoke(payload, probe=False):
     assert not evidence['model_tool_calls'], '预载流程出现意外工具调用'
     evidence['api_calls'] = result.get('api_calls')
     flush()
-    return dict(engine='hermes', model='glm-5.2', applied_model=result.get('model'), session_id=run_id,
+    return dict(engine='hermes', model='deepseek-flash', applied_model=result.get('model'), session_id=run_id,
                 exit_code=0 if final and not failed else 1, duration_ms=int((time.monotonic()-started)*1000),
                 turns=1, final_message=final, transcript=[dict(role='user', content=prompt), dict(role='assistant', content=final)],
                 warnings=[] if not failed else ['Hermes 未正常完成；保留原始运行记录。'])

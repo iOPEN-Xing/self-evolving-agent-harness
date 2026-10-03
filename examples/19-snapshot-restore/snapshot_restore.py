@@ -2,7 +2,7 @@
 
 从仓库根目录运行：
     .deps/hermes-agent/.venv/bin/python examples/19-snapshot-restore/snapshot_restore.py
-需要环境变量 GLM_API_KEY 或 BIGMODEL_API_KEY；运行时会调用 3 次 glm-5.2。
+需要环境变量 DEEPSEEK_API_KEY；运行时会调用 3 次 deepseek-flash。
 """
 
 import difflib
@@ -145,8 +145,8 @@ def run_probe(client: OpenAI, skill_dir: Path, filename: str) -> str:
         {"role": "user", "content": PROBE},
     ]
     response = client.chat.completions.create(
-        model="glm-5.2", messages=messages, temperature=0, max_tokens=1024,
-        extra_body={"reasoning_effort": "low"},
+        model="deepseek-flash", messages=messages, temperature=0, max_tokens=1024,
+        extra_body={"thinking": {"type": "disabled"}},
     )
     answer = (response.choices[0].message.content or "") if response.choices else ""
     (OUTPUT_DIR / filename).write_text(answer, encoding="utf-8")
@@ -166,7 +166,7 @@ def seed_sessions(db: SessionDB) -> dict[str, int]:
     """写入 2 个演示会话，各 2 条消息，并记录各自的消息数。"""
     counts = {}
     for sid, title in (("lab19-A", "告警状态核查"), ("lab19-B", "恢复观测跟进")):
-        db.create_session(sid, source="lab", model="glm-5.2")
+        db.create_session(sid, source="lab", model="deepseek-flash")
         db.set_session_title(sid, title)
         db.append_message(sid, "user", content=f"请协助{title}。")
         db.append_message(sid, "assistant", content="已记录调查请求，等待恢复观测。")
@@ -227,9 +227,9 @@ def sessiondb_backup_demo() -> None:
 
 
 def main() -> None:
-    api_key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
     if not api_key:
-        sys.exit("缺少 API key：请先设置环境变量 GLM_API_KEY 或 BIGMODEL_API_KEY。")
+        sys.exit("缺少 API key：请先设置环境变量 DEEPSEEK_API_KEY。")
     OUTPUT_DIR.mkdir(exist_ok=True)
     LAB_HOME = Path(tempfile.mkdtemp(prefix="lesson19-skill-"))
     SKILLS_DIR = LAB_HOME / "skills"
@@ -238,7 +238,7 @@ def main() -> None:
     snapshot_dir = SNAPSHOTS_DIR / f"v1-{SNAPSHOT_LABEL}"
     print(f"主例临时目录：{LAB_HOME}")
     print(f"产物目录：{OUTPUT_DIR}")
-    client = OpenAI(api_key=api_key, base_url="https://open.bigmodel.cn/api/paas/v4")
+    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     try:
         section("步骤 1：构造完整 Skill 目录")
         (skill_dir / "references").mkdir(parents=True)

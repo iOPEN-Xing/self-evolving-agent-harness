@@ -40,11 +40,11 @@ class ReplayNetwork:
         self.clients = {}
         # SDK 与 httpx 不再各自重试；总时限覆盖连接、读取和完整流式响应。
         for name, base_url, model in (
-            ("glm_chat", cfg.llm_api_base, cfg.llm_model_id),
+            ("model_chat", cfg.llm_api_base, cfg.llm_model_id),
             ("prm_score", cfg.prm_url, cfg.prm_model),
         ):
             self.clients[name] = AsyncOpenAI(
-                api_key=os.environ["GLM_API_KEY"], base_url=base_url,
+                api_key=os.environ["DEEPSEEK_API_KEY"], base_url=base_url,
                 max_retries=0, timeout=httpx.Timeout(REQUEST_TIMEOUT, connect=10.0),
                 http_client=httpx.AsyncClient(
                     trust_env=False, timeout=httpx.Timeout(REQUEST_TIMEOUT, connect=10.0)),
@@ -68,6 +68,7 @@ class ReplayNetwork:
             self.emit("request_started", component=component, attempt=attempt + 1)
             try:
                 async with asyncio.timeout(REQUEST_TIMEOUT):
+                    body["extra_body"] = {**body.get("extra_body", {}), "thinking": {"type": "disabled"}}
                     response = await self.clients[component].chat.completions.create(**body)
                     if body.get("stream"):
                         parts = []
@@ -88,7 +89,7 @@ class ReplayNetwork:
                     isinstance(status, int) and (status in (408, 409, 429) or status >= 500))
                 # 沿用上游的两种兼容处理，仍受同一重试次数限制。
                 response_text = getattr(getattr(exc, "response", None), "text", "") or ""
-                if component == "glm_chat" and status == 400:
+                if component == "model_chat" and status == 400:
                     if "'temperature' is not supported" in response_text:
                         body.pop("temperature", None)
                         retryable = True
@@ -128,7 +129,7 @@ async def validate_one(request):
     async def chat(_self, messages, **kwargs):
         requested = kwargs.pop("temperature", upstream_chat.temperature)
         return await network.complete(
-            "glm_chat", model=upstream_chat.model, messages=messages,
+            "model_chat", model=upstream_chat.model, messages=messages,
             max_completion_tokens=kwargs.pop("max_tokens", upstream_chat.max_tokens),
             temperature=_normalize_temperature(upstream_chat.model, requested), **kwargs)
 
@@ -233,9 +234,8 @@ def run_isolated_job(job, validator_alias, root, *, timeout=JOB_TIMEOUT):
 
 def main():
     request = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    if not os.environ.get("GLM_API_KEY", "").strip():
-        raise RuntimeError("验证子进程需要环境变量 GLM_API_KEY")
-    os.environ.pop("BIGMODEL_API_KEY", None)
+    if not os.environ.get("DEEPSEEK_API_KEY", "").strip():
+        raise RuntimeError("验证子进程需要环境变量 DEEPSEEK_API_KEY")
     config.OUTPUT_DIR = Path(request["output_dir"])
     os.environ["ASSEMBLY_SKILLCLAW_RUN_ID"] = request["skillclaw_run_id"]
     from .client import _upstream

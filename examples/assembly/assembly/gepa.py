@@ -86,16 +86,16 @@ def _json_object(raw: str) -> dict[str, Any]:
 class _Model:
     def __init__(self, run_dir: Path):
         # 不调用 config.api_key() 的文件回退；调用方须先 source 环境文件。
-        self.key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
+        self.key = os.environ.get("DEEPSEEK_API_KEY")
         if not self.key:
-            raise RuntimeError("请先把 GLM_API_KEY（或 BIGMODEL_API_KEY）加载到环境变量")
+            raise RuntimeError("请先把 DEEPSEEK_API_KEY加载到环境变量")
         self.run_dir, self.calls = run_dir, []
         self.session = requests.Session()
         self.session.trust_env = False
 
     def call(self, role: str, messages: list[dict[str, str]], max_tokens: int = 2400) -> dict[str, Any]:
         record: dict[str, Any] = {"call": len(self.calls) + 1, "role": role,
-                                  "model": "glm-5.2", "messages": messages, "started_at": time.time()}
+                                  "model": "deepseek-flash", "messages": messages, "started_at": time.time()}
         self.calls.append(record)
         path = self.run_dir / "calls" / f"{record['call']:03d}-{role}.json"
         write_json(path, record)
@@ -104,7 +104,7 @@ class _Model:
             response = self.session.post(
                 f"{config.BASE_URL.rstrip('/')}/chat/completions",
                 headers={"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"},
-                json={"model": "glm-5.2", "messages": messages, "temperature": 0.0,
+                json={"model": "deepseek-flash", "messages": messages, "temperature": 0.0,
                       "max_tokens": max_tokens, "thinking": {"type": "disabled"}},
                 timeout=(10, 180),
             )
@@ -275,7 +275,7 @@ def gepa_search(adopted_dir: Path, task_feed: dict[str, Any] | None = None,
     candidates: list[CandidateBundle] = []
     offline: dict[str, Any] = {"run_dir": str(run_dir), "fixed_inputs_hash": manifest_hash,
                                "rows": [], "rounds": [], "budget_rounds": budget_rounds,
-                               "convergence": stop, "model": "glm-5.2", "scoring": SCORE_POLICY,
+                               "convergence": stop, "model": "deepseek-flash", "scoring": SCORE_POLICY,
                                "method": "基于逐轮实际反馈的 current-best 精炼；不实现交叉与 Pareto。",
                                "references": ["https://arxiv.org/abs/2507.19457", "https://dspy.ai/current/api/optimizers/GEPA/overview/"]}
     model = None

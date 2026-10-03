@@ -4,7 +4,7 @@
 #       PROXY=http://127.0.0.1:7890 bash scripts/setup_deps.sh
 #       PROXY= bash scripts/setup_deps.sh  # 直连
 # 需要 Git，以及 uv 或 Python 3.12；uv 会按需下载 Python 3.12。
-# 已有源码目录不会被覆盖或自动更新；可自行进入目录执行 git pull。
+# 源码版本取自 deps.lock.json；已有目录不匹配时停止，避免覆盖本地修改。
 # 本脚本不需要 API key，也不会读取或写入任何 API key 配置。
 set -euo pipefail
 
@@ -33,11 +33,22 @@ fi
 mkdir -p "$DEPS_DIR"
 clone_source() {
   local name="$1" url="$2"
+  local revision
+  revision="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["sources"][sys.argv[2]]["commit"])' "$REPO_ROOT/deps.lock.json" "$name")"
   if [[ -e "$DEPS_DIR/$name" ]]; then
-    echo "已存在 .deps/${name}，跳过 clone；如需更新，请自行在该目录执行 git pull。"
+    if [[ "$(git -C "$DEPS_DIR/$name" rev-parse HEAD)" != "$revision" ]]; then
+      echo "错误：.deps/${name} 与 deps.lock.json 不一致；请另建 checkout 或备份后调整，不自动覆盖。" >&2
+      exit 1
+    fi
+    echo "复用 .deps/${name}，提交 ${revision}。"
   else
-    # 显式覆盖 Git 自身的代理设置，确保 PROXY= 也能直连。
-    git -c http.proxy="$PROXY" clone --depth 1 "$url" "$DEPS_DIR/$name"
+    if [[ "${SOURCE_PROTOCOL:-https}" == ssh ]]; then
+      url="git@github.com:${url#https://github.com/}"
+    fi
+    git init -q "$DEPS_DIR/$name"
+    git -C "$DEPS_DIR/$name" remote add origin "$url"
+    git -C "$DEPS_DIR/$name" -c http.proxy="$PROXY" fetch --depth 1 origin "$revision"
+    git -C "$DEPS_DIR/$name" checkout --detach FETCH_HEAD
   fi
 }
 
@@ -92,4 +103,4 @@ else
 fi
 
 echo "准备完成：四个上游源码已就绪，共用解释器为 .deps/hermes-agent/.venv/bin/python。"
-echo "运行练习前，请从环境变量提供 GLM_API_KEY（兼容 BIGMODEL_API_KEY），然后执行相应目录的 bash run.sh。"
+echo "运行练习前，请从环境变量提供 DEEPSEEK_API_KEY，然后执行相应目录的 bash run.sh。"

@@ -161,7 +161,7 @@ class SdkEventTests(unittest.TestCase):
             install.assert_called_once()
             arguments = install.call_args.args[0]
             self.assertIn("openai-codex==0.154.0", arguments)
-            self.assertIn("litellm[proxy]==1.101.0", arguments)
+            self.assertFalse(any("litellm" in arg for arg in arguments))
         with patch("sys.version_info", (3, 11)):
             with self.assertRaisesRegex(RuntimeError, "Python 3.12"):
                 exec(source, {})

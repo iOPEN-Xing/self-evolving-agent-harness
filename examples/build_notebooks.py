@@ -27,7 +27,7 @@ def lesson03():
 继续前两讲的巡检现场：同一句调查要求，模型第一次调用时还没有日志正文。等工具返回以后，这段内容才进入下一次调用。我们直接查看实际请求，区分任务、固定规则、工具说明与工具结果。'''),
         nb.v4.new_markdown_cell(r'''## 1. 准备运行环境
 
-使用 Python 3.12、openai-codex 0.154.0 和 litellm 1.101.0 调用 GLM-5.2 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
+使用 Python 3.12、openai-codex 0.154.0 的原生 Responses 协议 调用 DeepSeek Flash 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
 
 `examples/notebook_support.py` 负责连接、请求记录和关闭进程，本讲机制在下面的单元格中直接展开。保留完整的 `examples/` 目录。教学材料每次写入新的 `.runtime/` 子目录；其中的原始日志供本机排查，不对外分享。'''),
         nb.v4.new_code_cell(r'''from pathlib import Path
@@ -43,14 +43,14 @@ from notebook_support import (Lab, ApprovalMode, Sandbox, tool_output_contains,
                               command_receipts, denied_write, exact_command, read_json_answer)
 LESSON = project / "examples" / "03-context-engine"
 print("依赖与项目位置已确认。")'''),
-        nb.v4.new_markdown_cell(r'''## 2. 连接 GLM-5.2
+        nb.v4.new_markdown_cell(r'''## 2. 连接 DeepSeek Flash
 
-在启动 Jupyter 或验证器以前设置 `GLM_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
+在启动 Jupyter 或验证器以前设置 `DEEPSEEK_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
         nb.v4.new_code_cell(r'''if "lab" in globals():
     lab.close()
 lab = Lab(LESSON)
 WORK = lab.work
-print("GLM-5.2 适配器已连接；材料保存在本讲 .runtime 中。")'''),
+print("DeepSeek Flash 适配器已连接；材料保存在本讲 .runtime 中。")'''),
         nb.v4.new_markdown_cell(r'''## 3. 放入一条模型尚未读到的现场记录
 
 每次生成不同的采集编号。这个编号只写入文件，不出现在任务和开发者说明中。它能帮助我们确定：模型是在什么时候真正收到这条记录的。'''),
@@ -114,7 +114,7 @@ def lesson04():
 上一讲的 developer_instructions 跟随指定 Thread。这次把规则放到 AGENTS.md，分别从项目根目录、数据库目录启动新 Thread，直接检查规则的加载范围。'''),
         nb.v4.new_markdown_cell(r'''## 1. 准备运行环境
 
-使用 Python 3.12、openai-codex 0.154.0 和 litellm 1.101.0 调用 GLM-5.2 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
+使用 Python 3.12、openai-codex 0.154.0 的原生 Responses 协议 调用 DeepSeek Flash 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
 
 `examples/notebook_support.py` 负责连接、请求记录和关闭进程，本讲机制在下面的单元格中直接展开。保留完整的 `examples/` 目录。教学材料每次写入新的 `.runtime/` 子目录；其中的原始日志供本机排查，不对外分享。'''),
         nb.v4.new_code_cell(r'''from pathlib import Path
@@ -130,14 +130,14 @@ from notebook_support import (Lab, ApprovalMode, Sandbox, tool_output_contains,
                               command_receipts, denied_write, exact_command, read_json_answer)
 LESSON = project / "examples" / "04-agents-md"
 print("依赖与项目位置已确认。")'''),
-        nb.v4.new_markdown_cell(r'''## 2. 连接 GLM-5.2
+        nb.v4.new_markdown_cell(r'''## 2. 连接 DeepSeek Flash
 
-在启动 Jupyter 或验证器以前设置 `GLM_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
+在启动 Jupyter 或验证器以前设置 `DEEPSEEK_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
         nb.v4.new_code_cell(r'''if "lab" in globals():
     lab.close()
 lab = Lab(LESSON)
 WORK = lab.work
-print("GLM-5.2 适配器已连接；材料保存在本讲 .runtime 中。")'''),
+print("DeepSeek Flash 适配器已连接；材料保存在本讲 .runtime 中。")'''),
         nb.v4.new_markdown_cell(r'''## 3. 为项目与子目录各留一条规则
 
 根规则要求引用文件位置；数据库规则补充只读演练结果。两条规则各有随机标记，标记仅写在规则文件中，稍后不会放入用户消息。实验目录自带项目根标记，与真正的项目 AGENTS.md 分开。'''),
@@ -204,7 +204,7 @@ def lesson05():
 长日志很容易把工作上下文撑大。我们用 SDK 的 ExternalMessage 接收外部采集器提供的日志，纠正一个旧猜测，再调用 Thread.compact()。压缩后先复述任务状态，核对约束和纠正是否留下，最后重新取得原始材料。'''),
         nb.v4.new_markdown_cell(r'''## 1. 准备运行环境
 
-使用 Python 3.12、openai-codex 0.154.0 和 litellm 1.101.0 调用 GLM-5.2 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
+使用 Python 3.12、openai-codex 0.154.0 的原生 Responses 协议 调用 DeepSeek Flash 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
 
 `examples/notebook_support.py` 负责连接、请求记录和关闭进程，本讲机制在下面的单元格中直接展开。保留完整的 `examples/` 目录。教学材料每次写入新的 `.runtime/` 子目录；其中的原始日志供本机排查，不对外分享。'''),
         nb.v4.new_code_cell(r'''from pathlib import Path
@@ -220,14 +220,14 @@ from notebook_support import (Lab, ApprovalMode, Sandbox, tool_output_contains,
                               command_receipts, denied_write, exact_command, read_json_answer)
 LESSON = project / "examples" / "05-context-compression"
 print("依赖与项目位置已确认。")'''),
-        nb.v4.new_markdown_cell(r'''## 2. 连接 GLM-5.2
+        nb.v4.new_markdown_cell(r'''## 2. 连接 DeepSeek Flash
 
-在启动 Jupyter 或验证器以前设置 `GLM_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
+在启动 Jupyter 或验证器以前设置 `DEEPSEEK_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
         nb.v4.new_code_cell(r'''if "lab" in globals():
     lab.close()
 lab = Lab(LESSON)
 WORK = lab.work
-print("GLM-5.2 适配器已连接；材料保存在本讲 .runtime 中。")'''),
+print("DeepSeek Flash 适配器已连接；材料保存在本讲 .runtime 中。")'''),
         nb.v4.new_markdown_cell(r'''## 3. 让一份外部采集结果进入 Thread
 
 大多数采样都是正常记录。值得保留的事实是连接池等待升高；当前还不能断言数据库故障。这里的目标是拟定检查计划，禁止实施重启。Notebook 扮演外部采集器，以工具级权限投递材料；这不是 Agent 自己发起的文件读取，也不能借此授予操作权限。
@@ -329,7 +329,7 @@ def lesson06():
 旧事故的模块背景仍能用于新调查，旧根因却不能直接沿用。先给父 Thread 留下模块背景，再追加旧事故结论，然后从背景所在 Turn 分岔，检查新任务取得了哪些历史、排除了哪些历史。'''),
         nb.v4.new_markdown_cell(r'''## 1. 准备运行环境
 
-使用 Python 3.12、openai-codex 0.154.0 和 litellm 1.101.0 调用 GLM-5.2 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
+使用 Python 3.12、openai-codex 0.154.0 的原生 Responses 协议 调用 DeepSeek Flash 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
 
 `examples/notebook_support.py` 负责连接、请求记录和关闭进程，本讲机制在下面的单元格中直接展开。保留完整的 `examples/` 目录。教学材料每次写入新的 `.runtime/` 子目录；其中的原始日志供本机排查，不对外分享。'''),
         nb.v4.new_code_cell(r'''from pathlib import Path
@@ -345,14 +345,14 @@ from notebook_support import (Lab, ApprovalMode, Sandbox, tool_output_contains,
                               command_receipts, denied_write, exact_command, read_json_answer)
 LESSON = project / "examples" / "06-thread-fork"
 print("依赖与项目位置已确认。")'''),
-        nb.v4.new_markdown_cell(r'''## 2. 连接 GLM-5.2
+        nb.v4.new_markdown_cell(r'''## 2. 连接 DeepSeek Flash
 
-在启动 Jupyter 或验证器以前设置 `GLM_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
+在启动 Jupyter 或验证器以前设置 `DEEPSEEK_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
         nb.v4.new_code_cell(r'''if "lab" in globals():
     lab.close()
 lab = Lab(LESSON)
 WORK = lab.work
-print("GLM-5.2 适配器已连接；材料保存在本讲 .runtime 中。")'''),
+print("DeepSeek Flash 适配器已连接；材料保存在本讲 .runtime 中。")'''),
         nb.v4.new_markdown_cell(r'''## 3. 给父 Thread 留下分支前的共同事实'''),
         nb.v4.new_code_cell(r'''import secrets
 import json
@@ -432,10 +432,10 @@ def lesson07():
     write_lesson('07-skill-extraction', [
         nb.v4.new_markdown_cell(r'''# Lab 07｜把一次纠正变成下一次能用的方法
 
-一份事故记录包含当时的事实、模型的判断和后来的纠正。直接照搬它，容易让新任务沿用旧答案。这次先留下真实对话轨迹，再请 GLM-5.2 从中提炼 Skill，最后用一个原因不同的新案例检查方法是否能够迁移。'''),
+一份事故记录包含当时的事实、模型的判断和后来的纠正。直接照搬它，容易让新任务沿用旧答案。这次先留下真实对话轨迹，再请 DeepSeek Flash 从中提炼 Skill，最后用一个原因不同的新案例检查方法是否能够迁移。'''),
         nb.v4.new_markdown_cell(r'''## 1. 准备运行环境
 
-使用 Python 3.12、openai-codex 0.154.0 和 litellm 1.101.0 调用 GLM-5.2 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
+使用 Python 3.12、openai-codex 0.154.0 的原生 Responses 协议 调用 DeepSeek Flash 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
 
 `examples/notebook_support.py` 负责连接、请求记录和关闭进程，本讲机制在下面的单元格中直接展开。保留完整的 `examples/` 目录。教学材料每次写入新的 `.runtime/` 子目录；其中的原始日志供本机排查，不对外分享。'''),
         nb.v4.new_code_cell(r'''from pathlib import Path
@@ -451,14 +451,14 @@ from notebook_support import (Lab, ApprovalMode, Sandbox, tool_output_contains,
                               command_receipts, denied_write, exact_command, read_json_answer)
 LESSON = project / "examples" / "07-skill-extraction"
 print("依赖与项目位置已确认。")'''),
-        nb.v4.new_markdown_cell(r'''## 2. 连接 GLM-5.2
+        nb.v4.new_markdown_cell(r'''## 2. 连接 DeepSeek Flash
 
-在启动 Jupyter 或验证器以前设置 `GLM_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
+在启动 Jupyter 或验证器以前设置 `DEEPSEEK_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
         nb.v4.new_code_cell(r'''if "lab" in globals():
     lab.close()
 lab = Lab(LESSON)
 WORK = lab.work
-print("GLM-5.2 适配器已连接；材料保存在本讲 .runtime 中。")'''),
+print("DeepSeek Flash 适配器已连接；材料保存在本讲 .runtime 中。")'''),
         nb.v4.new_markdown_cell(r'''## 3. 留下一段带纠正的真实任务历史
 
 这里把脱敏现场作为用户提供的材料，不假装它来自工具。第一条输入故意包含一个待检验的旧猜测，后面用新采样纠正它。每次模型回复都由 Codex SDK 实际生成。'''),
@@ -567,7 +567,7 @@ def lesson08():
 一项 Skill 可以引用很长的运行手册，但没有必要在每次对话开始时全部装入。我们用三个不同的随机标记，分别追踪描述、SKILL.md 正文和参考文件，直接检查它们何时进入模型请求。'''),
         nb.v4.new_markdown_cell(r'''## 1. 准备运行环境
 
-使用 Python 3.12、openai-codex 0.154.0 和 litellm 1.101.0 调用 GLM-5.2 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
+使用 Python 3.12、openai-codex 0.154.0 的原生 Responses 协议 调用 DeepSeek Flash 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
 
 `examples/notebook_support.py` 负责连接、请求记录和关闭进程，本讲机制在下面的单元格中直接展开。保留完整的 `examples/` 目录。教学材料每次写入新的 `.runtime/` 子目录；其中的原始日志供本机排查，不对外分享。'''),
         nb.v4.new_code_cell(r'''from pathlib import Path
@@ -583,14 +583,14 @@ from notebook_support import (Lab, ApprovalMode, Sandbox, tool_output_contains,
                               command_receipts, denied_write, exact_command, read_json_answer)
 LESSON = project / "examples" / "08-progressive-disclosure"
 print("依赖与项目位置已确认。")'''),
-        nb.v4.new_markdown_cell(r'''## 2. 连接 GLM-5.2
+        nb.v4.new_markdown_cell(r'''## 2. 连接 DeepSeek Flash
 
-在启动 Jupyter 或验证器以前设置 `GLM_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
+在启动 Jupyter 或验证器以前设置 `DEEPSEEK_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
         nb.v4.new_code_cell(r'''if "lab" in globals():
     lab.close()
 lab = Lab(LESSON)
 WORK = lab.work
-print("GLM-5.2 适配器已连接；材料保存在本讲 .runtime 中。")'''),
+print("DeepSeek Flash 适配器已连接；材料保存在本讲 .runtime 中。")'''),
         nb.v4.new_markdown_cell(r'''## 3. 准备名称描述、正文和参考文件三层材料'''),
         nb.v4.new_code_cell(r'''import secrets
 from openai_codex import SkillInput, TextInput
@@ -671,7 +671,7 @@ def lesson09():
 模型知道“不该写”，与操作系统真的不允许写，是两回事。本练习先用原生只读 Sandbox 阻止一次无害的写入探针，再接入 Codex App Server 的审批回调，对同一个教学报告写入动作先拒绝、后允许。所有对象都在本次练习目录中，不连接生产系统。'''),
         nb.v4.new_markdown_cell(r'''## 1. 准备运行环境
 
-使用 Python 3.12、openai-codex 0.154.0 和 litellm 1.101.0 调用 GLM-5.2 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
+使用 Python 3.12、openai-codex 0.154.0 的原生 Responses 协议 调用 DeepSeek Flash 普通 API，无需 OpenAI 登录。从项目根目录执行 `python -m pip install -r examples/requirements-notebooks.txt jupyterlab`，再用同一环境启动 Jupyter。真实模型调用会产生 API 费用。
 
 `examples/notebook_support.py` 负责连接、请求记录和关闭进程，本讲机制在下面的单元格中直接展开。保留完整的 `examples/` 目录。教学材料每次写入新的 `.runtime/` 子目录；其中的原始日志供本机排查，不对外分享。'''),
         nb.v4.new_code_cell(r'''from pathlib import Path
@@ -687,14 +687,14 @@ from notebook_support import (Lab, ApprovalMode, Sandbox, tool_output_contains,
                               command_receipts, denied_write, exact_command, read_json_answer)
 LESSON = project / "examples" / "09-isolation-approval"
 print("依赖与项目位置已确认。")'''),
-        nb.v4.new_markdown_cell(r'''## 2. 连接 GLM-5.2
+        nb.v4.new_markdown_cell(r'''## 2. 连接 DeepSeek Flash
 
-在启动 Jupyter 或验证器以前设置 `GLM_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
+在启动 Jupyter 或验证器以前设置 `DEEPSEEK_API_KEY` 环境变量。本练习只读取这个变量；缺失时立即报错。密钥不写进 notebook，也不传给 Agent 的命令环境。下面启动本地适配器，`lab.run()` 开始真实模型调用。'''),
         nb.v4.new_code_cell(r'''if "lab" in globals():
     lab.close()
 lab = Lab(LESSON)
 WORK = lab.work
-print("GLM-5.2 适配器已连接；材料保存在本讲 .runtime 中。")'''),
+print("DeepSeek Flash 适配器已连接；材料保存在本讲 .runtime 中。")'''),
         nb.v4.new_markdown_cell(r'''## 3. 让一次明确的写入请求碰到只读边界
 
 先创建输入文件并记录哈希。要求 Agent 真正运行一次写入探针，不接受“我不会写”的口头回答作为隔离成功。若宿主环境禁止启动嵌套 Sandbox，应明确报验证受阻，不能把 `sandbox_apply` 启动失败算成文件权限验证通过。

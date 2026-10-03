@@ -53,7 +53,7 @@ def make_agent(instance: str, home_dir: Path) -> AIAgent:
     settings = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
     settings = settings or {}
     sections = {
-        "model": {"default": config.MODEL, "provider": "glm", "base_url": config.BASE_URL},
+        "model": {"default": config.MODEL, "provider": "deepseek", "base_url": config.BASE_URL},
         "memory": {"memory_enabled": True, "user_profile_enabled": True,
                    "nudge_interval": 1, "provider": ""},
         "skills": {"creation_nudge_interval": 1, "external_dirs": []},
@@ -76,7 +76,7 @@ def make_agent(instance: str, home_dir: Path) -> AIAgent:
     register_payment_tool()
     db = SessionDB(home / "state.db")
     agent = AIAgent(
-        model=config.MODEL, provider="glm", api_key=key, base_url=config.BASE_URL,
+        model=config.MODEL, provider="deepseek", api_key=key, base_url=config.BASE_URL,
         api_mode="chat_completions", max_iterations=12, max_tokens=4096,
         enabled_toolsets=[TOOLSET, "memory", "skills"],
         quiet_mode=True, save_trajectories=False, skip_context_files=True,

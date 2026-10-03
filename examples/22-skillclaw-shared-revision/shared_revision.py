@@ -10,13 +10,13 @@ direct/validated 发布边界。本练习调用真实 evolve_server（workflow �
      检查真实 JSON summary、v2 是否补上正确的连接池查询，以及会话是否被 ack。
   2. validated 边界：另起一个隔离共享存储，跑 --publish-mode validated，
      evolve 产出候选但只排队 validation job、不上传、版本不前进。
-  3. 第三处实例：三个全新的 GLM 工具循环分别注入 v1、拉取的 v2、下载 v2 但仍加载的 v1。
+  3. 第三处实例：三个全新的 DeepSeek 工具循环分别注入 v1、拉取的 v2、下载 v2 但仍加载的 v1。
      核对 skill_view、文件 SHA-256、真实模型工具调用和 mock 回执，不从回答措辞推断行动。
      工具环境复用第 21 讲的 mock，不执行真实运维命令；预期差异须由本次运行确认。
 
 运行：
   bash examples/21-skillclaw-session-collection/run.sh   # 先收集会话
-  export GLM_API_KEY=...
+  export DEEPSEEK_API_KEY=...
   unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
   bash examples/22-skillclaw-shared-revision/run.sh
 """
@@ -55,7 +55,7 @@ if _l21_spec is None or _l21_spec.loader is None:
     raise ImportError(f"无法加载第 21 讲工具循环：{L21_PATH}")
 lesson21 = importlib.util.module_from_spec(_l21_spec)
 _l21_spec.loader.exec_module(lesson21)
-GlmToolLoopAgent = lesson21.GlmToolLoopAgent
+ToolLoopAgent = lesson21.ToolLoopAgent
 
 SHARED_STORE = Path(
     os.environ.get(
@@ -64,8 +64,8 @@ SHARED_STORE = Path(
     )
 )
 GROUP_ID = "default"
-GLM_BASE = lesson21.GLM_BASE
-GLM_MODEL = lesson21.GLM_MODEL
+DEEPSEEK_BASE = lesson21.DEEPSEEK_BASE
+DEEPSEEK_MODEL = lesson21.DEEPSEEK_MODEL
 API_KEY = lesson21.API_KEY
 
 # 隔离的 validated 演示存储（不污染主共享存储）
@@ -99,8 +99,8 @@ def run_evolve(store: Path, publish_mode: str, history_tag: str) -> dict:
     env = strip_proxies(os.environ)
     env.update({
         "OPENAI_API_KEY": API_KEY,
-        "OPENAI_BASE_URL": GLM_BASE,
-        "EVOLVE_MODEL": GLM_MODEL,
+        "OPENAI_BASE_URL": DEEPSEEK_BASE,
+        "EVOLVE_MODEL": DEEPSEEK_MODEL,
         "EVOLVE_USE_SESSION_JUDGE": "1",
         "EVOLVE_HISTORY_LOG": str(REPO / ".runtime" / f"evolve_history_{history_tag}.jsonl"),
         "EVOLVE_PROCESSED_LOG": str(REPO / ".runtime" / f"evolve_processed_{history_tag}.json"),
@@ -110,7 +110,7 @@ def run_evolve(store: Path, publish_mode: str, history_tag: str) -> dict:
         str(VENV_PY), "-m", "evolve_server",
         "--engine", "workflow", "--once",
         "--storage-backend", "local", "--local-root", str(store),
-        "--model", GLM_MODEL,
+        "--model", DEEPSEEK_MODEL,
         "--publish-mode", publish_mode,
     ]
     print(f"  $ {' '.join(cmd)}")
@@ -171,7 +171,7 @@ def stage_validated_store(v1_md: str, session: dict) -> None:
 def run_third_instance(skill_md: str, task_prompt: str, label: str) -> dict:
     """新建 Agent，完整注入 skill_view；只依据匹配的调用和成功回执判断行为。"""
     # 每次 run 都从空对话开始；不调用 L21 的会话上传函数，不写学习会话。
-    turn = GlmToolLoopAgent(skill_md=skill_md, alias=label, task_prompt=task_prompt).run()
+    turn = ToolLoopAgent(skill_md=skill_md, alias=label, task_prompt=task_prompt).run()
     skill_view = turn["skill_view"]
     calls: list[str] = []
     results: list[dict] = []
@@ -276,14 +276,14 @@ def pool_command_lines(skill_md: str) -> tuple[list[str], bool]:
 
 def main() -> None:
     if not API_KEY:
-        print("ERROR: 请先 export GLM_API_KEY=...（或 BIGMODEL_API_KEY）")
+        print("ERROR: 请先 export DEEPSEEK_API_KEY=...")
         sys.exit(1)
     if not (SHARED_STORE / GROUP_ID / "sessions").exists() or queued_sessions(SHARED_STORE) == 0:
         print("ERROR: 共享存储里没有会话。请先跑 examples/21-skillclaw-session-collection/run.sh")
         sys.exit(1)
 
     for path in sorted((SHARED_STORE / GROUP_ID / 'sessions').glob('*.json')):
-        if json.loads(path.read_text()).get('source') != 'real_glm_toolloop':
+        if json.loads(path.read_text()).get('source') != 'real_deepseek_toolloop':
             excluded = SHARED_STORE / GROUP_ID / 'excluded-constructed'; excluded.mkdir(exist_ok=True)
             target = excluded / path.name
             if target.exists(): target = excluded / (str(time.time_ns())+'-'+path.name)
@@ -307,7 +307,7 @@ def main() -> None:
     # direct 会 ack 队列；预先在内存保留一条真实会话供步骤 2 重放。
     sessions = [json.loads(path.read_text(encoding="utf-8"))
                 for path in sorted((SHARED_STORE / GROUP_ID / "sessions").glob("*.json"))]
-    validated_session = next((s for s in sessions if s.get("source") == "real_glm_toolloop"), None)
+    validated_session = next((s for s in sessions if s.get("source") == "real_deepseek_toolloop"), None)
     if validated_session is None:
         raise RuntimeError("缺少 L21 的真实工具循环会话，请先运行新版第 21 讲；不以手写轨迹替代。")
 
@@ -379,7 +379,7 @@ def main() -> None:
 
     # ---- 3) 第三处实例 ----
     section("步骤 3：第三处实例 —— A 加载 v1 / B 下载并加载 v2 / C 下载 v2 但加载 v1")
-    log("  隔离条件：每个对比新建 GLM 工具循环 Agent，messages 从零开始，不沿用上轮对话。")
+    log("  隔离条件：每个对比新建 DeepSeek 工具循环 Agent，messages 从零开始，不沿用上轮对话。")
     log("  Memory/技能起点固定：A 和 C 注入同一 v1，B 注入 pull 下来的 v2；不加载其他记忆。")
     log("  第三实例后台学习关闭：本步骤不写入或上传任何学习会话，只保存本次核验记录。")
     log(f"  受检 v1 来源：{v1_path}")

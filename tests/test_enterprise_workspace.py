@@ -59,7 +59,7 @@ def test_native_timeout_preserves_status_and_redacted_partial_logs(suite, monkey
     import json
     module, root, out, _ = suite
     token = 'synthetic-not-a-real-key'
-    monkeypatch.setenv('GLM_API_KEY', token)
+    monkeypatch.setenv('DEEPSEEK_API_KEY', token)
     def timeout(command, **kwargs):
         if 'run' in command:
             raise subprocess.TimeoutExpired(command, 1, output='partial ' + token, stderr='timeout')

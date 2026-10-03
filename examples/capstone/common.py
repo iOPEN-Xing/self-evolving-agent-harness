@@ -1,4 +1,4 @@
-"""本地练习公共入口；凭据只从显式 GLM_API_KEY 环境变量取得。"""
+"""本地练习公共入口；凭据只从显式 DEEPSEEK_API_KEY 环境变量取得。"""
 from pathlib import Path
 import os,sys,json,hashlib,subprocess,time,uuid
 ROOT=Path(__file__).resolve().parents[2]
@@ -6,10 +6,10 @@ DELIVERY=Path(__file__).resolve().parent
 HERMES=Path(os.environ.get('HERMES_SRC',str(ROOT/'.deps/hermes-agent'))).resolve()
 SKILLCLAW=Path(os.environ.get('SKILLCLAW_SRC',str(ROOT/'.deps/SkillClaw'))).resolve()
 PYTHON=HERMES/'.venv/bin/python'
-MODEL='glm-5.2'
-BASE='https://open.bigmodel.cn/api/paas/v4'
+MODEL='deepseek-flash'
+BASE='https://api.deepseek.com'
 def prepare():
- if not os.environ.get('GLM_API_KEY','').strip(): raise RuntimeError('请先显式加载 GLM_API_KEY')
+ if not os.environ.get('DEEPSEEK_API_KEY','').strip(): raise RuntimeError('请先显式加载 DEEPSEEK_API_KEY')
  for k in ['http_proxy','https_proxy','all_proxy','HTTP_PROXY','HTTPS_PROXY','ALL_PROXY']:
   os.environ.pop(k,None)
  os.environ['PYTHONDONTWRITEBYTECODE']='1'

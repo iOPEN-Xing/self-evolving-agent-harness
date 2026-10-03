@@ -233,7 +233,7 @@ channel_transaction_id，再查渠道最终状态、本地处理和商户通知�
 
 
 def _redact(text: str) -> str:
-    for key in (os.environ.get("GLM_API_KEY"), os.environ.get("BIGMODEL_API_KEY")):
+    for key in (os.environ.get("DEEPSEEK_API_KEY"),):
         if key:
             text = text.replace(key, "[密钥已隐藏]")
     return text
@@ -336,8 +336,8 @@ def run_curator(home_dir: Path) -> dict[str, Any]:
         raise ValueError("Curator 演示需要空的隔离 HERMES_HOME，请使用新的目录名")
     if sys.platform != "darwin" or not Path("/usr/bin/sandbox-exec").is_file():
         raise RuntimeError("此真实 Curator 入口需要 macOS sandbox-exec 限制写入范围")
-    if not (os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")):
-        raise RuntimeError("缺少环境变量 GLM_API_KEY；请先 source ~/.hermes/.env")
+    if not (os.environ.get("DEEPSEEK_API_KEY")):
+        raise RuntimeError("缺少环境变量 DEEPSEEK_API_KEY；请先 export DEEPSEEK_API_KEY")
     adopted = init_adopted(config.SKILL_NAME)
     adopted_before = tree_hashes(adopted)
     home_dir.mkdir(parents=True, exist_ok=True)
@@ -347,7 +347,7 @@ def run_curator(home_dir: Path) -> dict[str, Any]:
         (home_dir / name).mkdir()
     _write_text(home_dir / "config.yaml", f"""model:
   default: {config.MODEL}
-  provider: glm
+  provider: deepseek
 terminal:
   backend: local
   cwd: {json.dumps(str(home_dir))}
@@ -361,7 +361,7 @@ curator:
   archive_after_days: 14
 auxiliary:
   curator:
-    provider: glm
+    provider: deepseek
     model: {config.MODEL}
     base_url: {config.BASE_URL}
     extra_body:
@@ -375,7 +375,6 @@ auxiliary:
                PYTHONPATH=str(config.ASSEMBLY_DIR) + os.pathsep + str(config.HERMES_SRC),
                TMPDIR=str(home_dir / "tmp"), TMP=str(home_dir / "tmp"), TEMP=str(home_dir / "tmp"),
                XDG_CACHE_HOME=str(home_dir / "cache"))
-    env.setdefault("GLM_API_KEY", env.get("BIGMODEL_API_KEY", ""))
     python = str(config.HERMES_SRC / ".venv" / "bin" / "python")
     command = ["/usr/bin/sandbox-exec", "-f", str(profile), python]
     # 启动模型之前，用真实文件写入确认正式目录受到 OS 保护。

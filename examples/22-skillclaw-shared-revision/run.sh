@@ -11,9 +11,7 @@ cd "$REPO_ROOT"
 
 unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
 
-if [ -z "${GLM_API_KEY:-}" ] && [ -n "${BIGMODEL_API_KEY:-}" ]; then
-  export GLM_API_KEY="$BIGMODEL_API_KEY"
-fi
+: "${DEEPSEEK_API_KEY:?需要设置 DEEPSEEK_API_KEY}"
 
 # 独立 HERMES_HOME 第三实例的 hermes 二进制（可被环境覆盖）
 export HERMES_BIN="${HERMES_BIN:-$(command -v hermes || echo hermes)}"

@@ -23,7 +23,7 @@ def prepare(workspace,python,output_path=None):
 
 def launch(args,workspace,python,timeout=600,output_path=None):
     runtime,profile=prepare(workspace,python,output_path)
-    env={k:v for k,v in os.environ.items() if k in {'PATH','LANG','LC_ALL','TZ','GLM_API_KEY','GLM_BASE_URL','LECTURE_HERMES_SOURCE','HTTPS_PROXY','HTTP_PROXY','ALL_PROXY','NO_PROXY','https_proxy','http_proxy','all_proxy','no_proxy'}}
+    env={k:v for k,v in os.environ.items() if k in {'PATH','LANG','LC_ALL','TZ','DEEPSEEK_API_KEY','DEEPSEEK_BASE_URL','LECTURE_HERMES_SOURCE','HTTPS_PROXY','HTTP_PROXY','ALL_PROXY','NO_PROXY','https_proxy','http_proxy','all_proxy','no_proxy'}}
     env.update(PYTHONDONTWRITEBYTECODE='1',COURSE_RUNTIME_DIR=str(runtime),HERMES_HOME=str(runtime/'hermes-home'),TMPDIR=str(runtime))
     # 沙箱父进程超时后，后台模型 worker 也必须随整个作业组停止。
     return run_bounded(['/usr/bin/sandbox-exec','-f',str(profile),*args],env=env,cwd=workspace,timeout=timeout,text=False),runtime

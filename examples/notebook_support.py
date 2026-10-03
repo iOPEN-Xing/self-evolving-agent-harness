@@ -1,4 +1,4 @@
-"""第 03 至 09 讲共用的本地运行设施；教学机制写在各讲 notebook 中。"""
+"""第 01 至 09 讲共用的本地运行设施；教学机制写在各讲 notebook 中。"""
 from __future__ import annotations
 
 import atexit
@@ -6,16 +6,12 @@ import http.client
 import json
 import re
 import shlex
-import signal
 import os
 from pathlib import Path
 import secrets
-import socket
-import subprocess
 import sys
 import threading
 import time
-import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.metadata import version
 
@@ -23,15 +19,15 @@ from openai_codex import ApprovalMode, Codex, CodexConfig, Sandbox
 
 
 class Lab:
-    """启动真实 SDK 与 GLM 适配器，并记录不含认证头的模型请求。"""
+    """启动真实 SDK 与 DeepSeek 原生 Responses 观察服务，并记录不含认证头的模型请求。"""
 
     def __init__(self, directory: Path):
-        key = os.environ.get("GLM_API_KEY", "").strip()
+        key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
         if not key:
-            raise ValueError("请在启动进程前设置 GLM_API_KEY 环境变量。")
+            raise ValueError("请在启动进程前设置 DEEPSEEK_API_KEY 环境变量。")
         if sys.version_info[:2] != (3, 12):
             raise RuntimeError("请使用 Python 3.12 运行本练习。")
-        for package, expected in (("openai-codex", "0.154.0"), ("litellm", "1.101.0")):
+        for package, expected in (("openai-codex", "0.154.0"),):
             if version(package) != expected:
                 raise RuntimeError(f"请安装 {package}=={expected}，本练习按该版本核验。")
         self.directory = directory.resolve()
@@ -51,8 +47,7 @@ class Lab:
         self.requests = []
         self.results = []
         self.turn_objects = []
-        self.codex = self.proxy = self.observer = self.log = None
-        self._log_thread = None
+        self.codex = self.observer = None
         self._closed = False
         self._cleanup_errors = []
         atexit.register(self.close)
@@ -65,61 +60,6 @@ class Lab:
     def _start(self, key):
         token = "sk-lab-" + secrets.token_hex(24)
         self._secrets.append(token)
-        with socket.socket() as sock:
-            sock.bind(("127.0.0.1", 0))
-            port = sock.getsockname()[1]
-        (self.runtime / "custom_handler.py").write_text('''from litellm.integrations.custom_logger import CustomLogger
-class GlmFix(CustomLogger):
-    async def async_pre_call_hook(self, user_api_key_dict, cache, data, call_type):
-        if not isinstance(data.get("reasoning_effort"), str):
-            data.pop("reasoning_effort", None)
-        data.pop("reasoning", None)
-        return data
-proxy_handler = GlmFix()
-''', encoding="utf-8")
-        config_path = self.runtime / "litellm.yaml"
-        config_path.write_text('''model_list:
-  - model_name: glm-codex
-    litellm_params:
-      model: openai/chat_completions/glm-5.2
-      api_base: https://open.bigmodel.cn/api/paas/v4
-      api_key: os.environ/GLM_API_KEY
-general_settings:
-  master_key: os.environ/LAB_PROXY_TOKEN
-litellm_settings:
-  drop_params: true
-  set_verbose: false
-  callbacks: custom_handler.proxy_handler
-''', encoding="utf-8")
-        env = os.environ.copy()
-        env.update(GLM_API_KEY=key, LAB_PROXY_TOKEN=token, PYTHONPATH=str(self.runtime))
-        self.log = (self.runtime / "adapter.log").open("w", encoding="utf-8")
-        self.proxy = subprocess.Popen(
-            [str(Path(sys.executable).with_name("litellm")), "--config", str(config_path),
-             "--host", "127.0.0.1", "--port", str(port)],
-            cwd=self.runtime, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            text=True, encoding="utf-8", errors="replace", start_new_session=True,
-        )
-        def capture_log():
-            for line in self.proxy.stdout:
-                for secret in self._secrets:
-                    line = line.replace(secret, "<密钥已隐藏>")
-                self.log.write(line)
-                self.log.flush()
-        self._log_thread = threading.Thread(target=capture_log, daemon=True)
-        self._log_thread.start()
-        for _ in range(90):
-            if self.proxy.poll() is not None:
-                raise RuntimeError("适配器启动失败，请检查本讲 .runtime 内的本地日志。")
-            try:
-                with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(
-                        f"http://127.0.0.1:{port}/health/liveliness", timeout=1):
-                    break
-            except OSError:
-                time.sleep(1)
-        else:
-            raise TimeoutError("适配器启动超时。")
-
         lab = self
 
         class Observer(BaseHTTPRequestHandler):
@@ -147,24 +87,15 @@ litellm_settings:
                 with lab._request_lock:
                     lab.requests.append(observed)
                     lab._write_json(f"request-{len(lab.requests):03}.json", observed)
-                # Responses 允许 ExternalMessage 没有 call_id；Chat Completions
-                # 要求工具结果与一个调用配对。补协议信封，保持工具级权限，
-                # 不把外部材料抬成 user/developer 指令，也不执行任何新工具。
-                if isinstance(payload.get("input"), list):
-                    converted = []
-                    for item in payload["input"]:
-                        if isinstance(item, dict) and item.get("type") == "function_call_output" and not item.get("call_id"):
-                            call_id = "external_" + str(item.get("id") or secrets.token_hex(6))
-                            converted.append({"type": "function_call", "call_id": call_id,
-                                              "name": item.get("name", "external_delivery"), "arguments": "{}"})
-                            item = {**item, "call_id": call_id}
-                        converted.append(item)
-                    payload["input"] = converted
-                    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-                conn = http.client.HTTPConnection("127.0.0.1", port, timeout=240)
+                # Source: https://api-docs.deepseek.com/quick_start/agent_integrations/codex/
+                # 保留 Responses 的输入项与外部回执，不转换为 Chat Completions。
+                if self.path not in ("/v1/responses", "/responses"):
+                    self.send_error(404)
+                    return
+                conn = http.client.HTTPSConnection("api.deepseek.com", timeout=240)
                 try:
-                    conn.request("POST", self.path, body=body, headers={
-                        "Content-Type": "application/json", "Authorization": "Bearer " + token})
+                    conn.request("POST", "/responses", body=body, headers={
+                        "Content-Type": "application/json", "Authorization": "Bearer " + key})
                     response = conn.getresponse()
                     self.send_response(response.status)
                     self.send_header("Content-Type", response.getheader("Content-Type", "application/json"))
@@ -188,8 +119,8 @@ litellm_settings:
         self.config = CodexConfig(
             cwd=str(self.work),
             config_overrides=(
-                'model="glm-codex"', 'model_provider="lab"',
-                'model_providers.lab.name="GLM-5.2 本地适配器"',
+                'model="deepseek-flash"', 'model_provider="lab"',
+                'model_providers.lab.name="DeepSeek 原生 Responses 观察服务"',
                 f'model_providers.lab.base_url="http://127.0.0.1:{self.observer.server_port}/v1"',
                 'model_providers.lab.env_key="LAB_LOCAL_TOKEN"',
                 'model_providers.lab.wire_api="responses"',
@@ -204,7 +135,7 @@ litellm_settings:
             env={**{name: "" for name in os.environ
                     if any(part in name.upper() for part in ("KEY", "TOKEN", "SECRET", "PASSWORD"))},
                  "CODEX_HOME": str(self.runtime / "codex-home"),
-                 "LAB_LOCAL_TOKEN": token, "GLM_API_KEY": "", "BIGMODEL_API_KEY": "",
+                 "LAB_LOCAL_TOKEN": token, "DEEPSEEK_API_KEY": "",
                  "OPENAI_API_KEY": "",
                  # 有的启动器把中文路径编码损坏后放进 shell 的最近命令变量。
                  # Codex 0.154.0 构造工具环境时要求有效 UTF-8。
@@ -312,8 +243,8 @@ litellm_settings:
             raise ValueError("附加事实不能覆盖验证记录的保留字段。")
         for name, passed in checks.items():
             print(("PASS" if passed else "FAIL"), name)
-        record = {"run_id": self.run_id, "model": "glm-5.2", "sdk": version("openai-codex"),
-                  "adapter": version("litellm"), "checked_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        record = {"run_id": self.run_id, "model": "deepseek-flash", "sdk": version("openai-codex"),
+                  "adapter": "native-responses", "base_url": "https://api.deepseek.com", "checked_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
                   "checks": checks, "turns": self.results, "request_count": len(self.requests), **facts}
         self._write_json("checks.json", record)
         failed = [name for name, passed in checks.items() if not passed]
@@ -340,27 +271,6 @@ litellm_settings:
         if self.observer:
             attempt(self.observer.shutdown)
             attempt(self.observer.server_close)
-        if self.proxy:
-            def stop_proxy():
-                # 适配器可能派生工作进程，一并结束本次专属进程组。
-                try:
-                    os.killpg(self.proxy.pid, signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
-                try:
-                    self.proxy.wait(5)
-                except subprocess.TimeoutExpired:
-                    os.killpg(self.proxy.pid, signal.SIGKILL)
-                    self.proxy.wait(5)
-            attempt(stop_proxy)
-        if self._log_thread:
-            self._log_thread.join(5)
-        if self.proxy and self.proxy.stdout and not (self._log_thread and self._log_thread.is_alive()):
-            attempt(self.proxy.stdout.close)
-        if self._log_thread and self._log_thread.is_alive():
-            errors.append("适配器日志线程未退出")
-        elif self.log:
-            attempt(self.log.close)
         atexit.unregister(self.close)
         self._cleanup_errors = errors
         if errors:

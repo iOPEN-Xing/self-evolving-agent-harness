@@ -41,7 +41,7 @@ def _load(path: Path) -> Any:
 
 def _safe_error(exc: Exception) -> str:
     message = f"{type(exc).__name__}: {exc}"
-    for name in ("GLM_API_KEY", "BIGMODEL_API_KEY", "OPENAI_API_KEY"):
+    for name in ("DEEPSEEK_API_KEY", "OPENAI_API_KEY"):
         secret = os.environ.get(name)
         if secret:
             message = message.replace(secret, "[密钥已隐藏]")
@@ -233,7 +233,7 @@ def _summary(report: dict[str, Any]) -> None:
 
 ## Hermes Curator 的真实运行
 
-调用 `agent.curator.run_curator_review(synchronous=True, dry_run=False, consolidate=True)`；内部执行自动状态迁移与原生模型整合。显式开启 `curator.consolidate`，使用 `glm-5.2`。自动入口的 enabled、paused、首次运行、idle、interval 门控与手动运行的区别见 [Curator 记录](curator_result.json)。
+调用 `agent.curator.run_curator_review(synchronous=True, dry_run=False, consolidate=True)`；内部执行自动状态迁移与原生模型整合。显式开启 `curator.consolidate`，使用 `deepseek-flash`。自动入口的 enabled、paused、首次运行、idle、interval 门控与手动运行的区别见 [Curator 记录](curator_result.json)。
 
 首次原生运行曾将页面设计与支付调查一同吸收，未通过异任务保护检查，未导出候选。失败记录保留在 {earlier_failure}。随后在本地调用适配层追加用户要求的工作边界：按输入、业务判断和输出决定整合，页面设计独立保留，不凑归档数量。原始提示、追加约束、最终提示与原生返回状态都保存在对应 home。成功结果是 **Hermes Curator 加本工程范围约束** 的实测，不能据此声称原版已能避免误并；`.deps` 源码未改。
 
@@ -243,7 +243,7 @@ def _summary(report: dict[str, Any]) -> None:
 
 ## GEPA 的实现与结果边界
 
-这里采用轻量反馈式精炼：真实模型执行训练任务，确定性核对和 LLM judge 产生反馈，再由 `glm-5.2` 基于上一轮的回复与扣分理由改写完整 `SKILL.md`。始终保留基线；候选通过统一创建入口落盘。实现参考 [GEPA 论文](https://arxiv.org/abs/2507.19457) 与 [DSPy GEPA](https://dspy.ai/api/optimizers/GEPA/overview/)，并非完整算法复现。
+这里采用轻量反馈式精炼：真实模型执行训练任务，确定性核对和 LLM judge 产生反馈，再由 `deepseek-flash` 基于上一轮的回复与扣分理由改写完整 `SKILL.md`。始终保留基线；候选通过统一创建入口落盘。实现参考 [GEPA 论文](https://arxiv.org/abs/2507.19457) 与 [DSPy GEPA](https://dspy.ai/api/optimizers/GEPA/overview/)，并非完整算法复现。
 
 演示预先固定有偏的历史训练标签：把 processing 误记为付款成功；保留集按 success 才计入已付金额。它检验“优化了错误的离线目标，保留集会否退步”，不是声称真实业务优化有效。保留集不进入精炼，不根据其结果再搜索。
 
@@ -266,9 +266,9 @@ def _summary(report: dict[str, Any]) -> None:
 从工程根目录执行：
 
 ```bash
-set -a
-source ~/.hermes/.env
-set +a
+read -r -s DEEPSEEK_API_KEY
+export DEEPSEEK_API_KEY
+export DEEPSEEK_API_KEY
 unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
 PYTHONDONTWRITEBYTECODE=1 .deps/hermes-agent/.venv/bin/python examples/assembly/run_lifecycle_demo.py
 ```
@@ -301,7 +301,7 @@ def main() -> int:
 
     try:
         config.clear_proxy_for_model()
-        if not (os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")):
+        if not (os.environ.get("DEEPSEEK_API_KEY")):
             raise RuntimeError("请先由 shell 加载 ~/.hermes/.env；脚本仅从环境读取密钥")
         adopted = init_adopted(config.SKILL_NAME)
         before = tree_hashes(adopted)

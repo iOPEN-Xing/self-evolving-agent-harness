@@ -56,7 +56,7 @@ def deterministic_pass(checks: Dict[str, Any]) -> bool:
 
 def llm_judge(answer: str, rubric: str, case_input: str,
               llm_call: Callable[[list, float, int], str]) -> Dict[str, Any]:
-    """用 glm-5.2 当裁判，按 rubric 给 1-5 分，并给出理由。
+    """用 deepseek-flash 当裁判，按 rubric 给 1-5 分，并给出理由。
 
     llm_call(messages, temperature, max_tokens) -> str。
     返回状态、分数、理由和原始响应；解析失败时分数为 None。

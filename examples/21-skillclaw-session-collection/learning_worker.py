@@ -23,7 +23,7 @@ registry.register(name='run_shell',toolset='lecture_diagnostics',schema={'name':
 db=SessionDB(home/'state.db')
 overrides={'extra_body':{'thinking':{'type':'disabled'}},'temperature':0}
 if cfg['base']!=BASE:overrides['extra_headers']={'X-Session-Id':cfg['session'],'X-Turn-Type':'main'}
-agent=AIAgent(model=MODEL,provider='glm',api_key=os.environ['GLM_API_KEY'],base_url=cfg['base'],api_mode='chat_completions',max_iterations=6,max_tokens=2200,enabled_toolsets=['lecture_diagnostics','skills'],quiet_mode=True,skip_memory=True,skip_context_files=True,save_trajectories=False,session_id=cfg['session'],session_db=db,request_overrides=overrides,ephemeral_system_prompt='你是诊断助手。真实调用工具，只根据回执下结论。遵循本轮加载的方法；不能把建议写成已执行。最后用中文说明已查明的原因和未确认事项。')
+agent=AIAgent(model=MODEL,provider='deepseek',api_key=os.environ['DEEPSEEK_API_KEY'],base_url=cfg['base'],api_mode='chat_completions',max_iterations=6,max_tokens=2200,enabled_toolsets=['lecture_diagnostics','skills'],quiet_mode=True,skip_memory=True,skip_context_files=True,save_trajectories=False,session_id=cfg['session'],session_db=db,request_overrides=overrides,ephemeral_system_prompt='你是诊断助手。真实调用工具，只根据回执下结论。遵循本轮加载的方法；不能把建议写成已执行。最后用中文说明已查明的原因和未确认事项。')
 prompt=cfg.get('prompt','请求持续超时。先调用 skill_view 读取 service-diagnosis，再严格执行其中的诊断命令并给出结论。不要修改技能。')
 started=time.time()
 try:

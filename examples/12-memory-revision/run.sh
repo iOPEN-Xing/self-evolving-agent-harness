@@ -2,10 +2,10 @@
 # 第 12 讲练习运行脚本：记忆修订（错误记忆比没有更糟，修订可追溯）。
 #
 # 用法：
-#   GLM_API_KEY=你的智谱key bash run.sh
+#   DEEPSEEK_API_KEY=你的DeepSeekkey bash run.sh
 #
 # 说明：
-#   - 跑模型前 unset 所有代理（直连 open.bigmodel.cn）。
+#   - 跑模型前 unset 所有代理（直连 api.deepseek.com）。
 #   - HERMES_HOME 钉在本目录，不碰 ~/.hermes。
 #   - 输出同时打印到终端并写入 output/run.log。
 set -euo pipefail
@@ -18,9 +18,9 @@ export HERMES_SRC
 # 必须 unset 代理，否则模型请求走 Clash 会失败。
 unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
 
-export GLM_API_KEY="${GLM_API_KEY:-${BIGMODEL_API_KEY:-}}"
-: "${GLM_API_KEY:?需要 export GLM_API_KEY（智谱 key）}"
-export GLM_BASE_URL="${GLM_BASE_URL:-https://open.bigmodel.cn/api/paas/v4}"
+export DEEPSEEK_API_KEY="${DEEPSEEK_API_KEY:-}"
+: "${DEEPSEEK_API_KEY:?需要 export DEEPSEEK_API_KEY（DeepSeek key）}"
+export DEEPSEEK_BASE_URL="${DEEPSEEK_BASE_URL:-https://api.deepseek.com}"
 
 cd "$HERMES_SRC"
 mkdir -p "$HERE/output"

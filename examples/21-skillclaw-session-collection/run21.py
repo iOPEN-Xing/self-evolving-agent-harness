@@ -9,7 +9,7 @@ root=new_run('lecture21');skill=root/'formal/service-diagnosis/SKILL.md';skill.p
 hub=SkillHub(backend='local',endpoint='',bucket='',access_key_id='',secret_access_key='',local_root=str(root/'offline/store'),group_id='lecture21',user_alias='collector')
 hub.push_skills(str(root/'formal'))
 with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
-cfg=SkillClawConfig(proxy_host='127.0.0.1',proxy_port=port,claw_type='hermes',configure_openclaw=False,llm_api_base=BASE,llm_api_key=os.environ['GLM_API_KEY'],llm_model_id=MODEL,served_model_name=MODEL,record_dir=str(root/'proxy'),record_enabled=True,use_prm=False,use_skills=False,sharing_enabled=True,sharing_backend='local',sharing_local_root=str(root/'offline/store'),sharing_group_id='lecture21',sharing_user_alias='collector',skills_dir=str(root/'proxy-skills'),validation_enabled=False,dashboard_enabled=False,max_context_tokens=64000)
+cfg=SkillClawConfig(proxy_host='127.0.0.1',proxy_port=port,claw_type='hermes',configure_openclaw=False,llm_api_base=BASE,llm_api_key=os.environ['DEEPSEEK_API_KEY'],llm_model_id=MODEL,served_model_name=MODEL,record_dir=str(root/'proxy'),record_enabled=True,use_prm=False,use_skills=False,sharing_enabled=True,sharing_backend='local',sharing_local_root=str(root/'offline/store'),sharing_group_id='lecture21',sharing_user_alias='collector',skills_dir=str(root/'proxy-skills'),validation_enabled=False,dashboard_enabled=False,max_context_tokens=64000)
 proxy=SkillClawAPIServer(cfg)
 @proxy.app.post('/collect/close/{sid}')
 async def close_session(sid:str):

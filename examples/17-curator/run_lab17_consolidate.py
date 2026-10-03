@@ -4,12 +4,12 @@
 运行方式（从专栏根目录开始）：
   cd .deps/hermes-agent && \
     unset http_proxy https_proxy all_proxy no_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY && \
-    export GLM_API_KEY='在本机填入密钥' && \
+    export DEEPSEEK_API_KEY='在本机填入密钥' && \
     .venv/bin/python ../../examples/17-curator/run_lab17_consolidate.py
 
-也支持 BIGMODEL_API_KEY；脚本清除所有以 _proxy 结尾的环境变量。
+凭证仅从 DEEPSEEK_API_KEY 读取；脚本清除所有以 _proxy 结尾的环境变量。
 为单独观察整理机制，重新构造单笔支付方法，不自动接续前面的修订结果。
-业务材料是构造示例；模型调用是真实 glm-5.2，temperature=0.25。
+业务材料是构造示例；模型调用是真实 deepseek-flash，temperature=0.25。
 完整 fork 最长运行 300 秒；失败后只做一次最小整合判断，不代替模型合并文件。
 output/consolidate_result.json 是结果入口，列出本次快照、报告、判断与核验。
 real_llm_consolidate_run 表示完整 fork 已完成，不表示模型必然选择整合；
@@ -37,8 +37,8 @@ HERMES_SRC = Path(
 ).expanduser().resolve()
 HERMES_ROOT = HERMES_SRC
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
-MODEL = os.environ.get("GLM_MODEL", "glm-5.2")
-BASE_URL = os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
+MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
+BASE_URL = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 TEMPERATURE = 0.25
 FORK_TIMEOUT = 300
 GENERAL = "payment-status-investigation"
@@ -137,7 +137,7 @@ def save_json(path, value):
 
 
 def redact(text):
-    for name in ("GLM_API_KEY", "BIGMODEL_API_KEY"):
+    for name in ("DEEPSEEK_API_KEY",):
         key = os.environ.get(name)
         if key:
             text = text.replace(key, "[密钥已隐藏]")
@@ -149,10 +149,10 @@ def prepare_environment(home):
         if key.lower().endswith("_proxy"):
             os.environ.pop(key, None)
     os.environ["HERMES_HOME"] = str(home)
-    os.environ["GLM_BASE_URL"] = BASE_URL
-    key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
+    os.environ["DEEPSEEK_BASE_URL"] = BASE_URL
+    key = os.environ.get("DEEPSEEK_API_KEY")
     if key:
-        os.environ["GLM_API_KEY"] = key
+        os.environ["DEEPSEEK_API_KEY"] = key
     sys.path.insert(0, str(HERMES_ROOT))
     import hermes_constants
     importlib.reload(hermes_constants)
@@ -310,6 +310,7 @@ def minimal_decision(before, key, run_dir):
     (run_dir / "minimal_prompt.txt").write_text(prompt, encoding="utf-8")
     with OpenAI(api_key=key, base_url=BASE_URL, timeout=120, max_retries=0) as client:
         response = client.chat.completions.create(
+            extra_body={"thinking": {"type": "disabled"}},
             model=MODEL, temperature=TEMPERATURE, max_tokens=4000,
             messages=[{"role": "system", "content": "你负责技能库整合判断。只返回合法 JSON。"},
                       {"role": "user", "content": prompt}],
@@ -437,7 +438,7 @@ def main():
     # auxiliary.curator.extra_body 是本版本 Curator 原生支持的请求参数入口。
     (home / "config.yaml").write_text(f"""model:
   default: {MODEL}
-  provider: glm
+  provider: deepseek
 terminal:
   backend: local
   cwd: {json.dumps(str(home))}
@@ -448,7 +449,7 @@ curator:
   archive_after_days: 14
 auxiliary:
   curator:
-    provider: glm
+    provider: deepseek
     model: {MODEL}
     base_url: {BASE_URL}
     extra_body:
@@ -494,7 +495,7 @@ auxiliary:
             from agent import curator
             save_json(run_dir / "curator_state_before.json", curator.load_state())
             if not key:
-                raise RuntimeError("请设置 GLM_API_KEY 或 BIGMODEL_API_KEY；未发起模型调用")
+                raise RuntimeError("请设置 DEEPSEEK_API_KEY；未发起模型调用")
             result["fork_return"] = run_fork(home, run_dir)
             result["sandbox_verification"] = json.loads((run_dir / "sandbox-verification.json").read_text(encoding="utf-8"))
             state = curator.load_state()

@@ -38,9 +38,9 @@ from versioning import snapshot as vsnap
 from versioning import source
 from versioning import policy
 
-BASE_URL = "https://open.bigmodel.cn/api/paas/v4"
-API_KEY = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY") or ""
-MODEL = "glm-5.2"
+BASE_URL = "https://api.deepseek.com"
+API_KEY = os.environ.get("DEEPSEEK_API_KEY") or ""
+MODEL = "deepseek-flash"
 MAX_ROUNDS = 1
 WALL_CLOCK_BUDGET_SEC = 900
 MAX_JUDGE_RETRIES = 3
@@ -115,6 +115,7 @@ def completion(**kwargs):
     timeout = min(120.0, remaining_budget())
     try:
         result = _client.with_options(timeout=timeout, max_retries=0).chat.completions.create(
+            extra_body={"thinking": {"type": "disabled"}},
             model=MODEL, **kwargs)
     except Exception:
         remaining_budget()
@@ -176,7 +177,7 @@ def make_home(alias):
     (home / "skills").mkdir(parents=True)
     (home / "memories").mkdir()
     (home / "config.yaml").write_text(
-        'model:\n  default: "glm-5.2"\n  provider: "glm"\n'
+        'model:\n  default: "deepseek-flash"\n  provider: "deepseek"\n'
         'terminal:\n  backend: local\nskills:\n  disabled: []\n', encoding="utf-8")
     print(f"实例 {alias}: {home}")
     return home
@@ -331,7 +332,7 @@ def run_case(skill_text, version, tc) -> Dict:
     snapshots = eval_case_observations(case_id)
     session_id = f"eval-{version}-{case_id}"
     state = dict(state="PATROLLING", transitions=[], records=[])
-    session = dict(session_id=session_id, source="real_glm_toolloop", expected_turns=2, turns=[])
+    session = dict(session_id=session_id, source="real_deepseek_toolloop", expected_turns=2, turns=[])
     execution = dict(session=session, state=state)
     path = OUTPUT_DIR / "eval_cases" / version / f"{case_id}.json"
     fields = dict(check_deployment="deployment", read_config="config", query_logs="logs")
@@ -647,7 +648,7 @@ def hub_counts():
 def main():
     global _client, _started
     if not API_KEY:
-        raise SystemExit("请先设置环境变量 GLM_API_KEY（或 BIGMODEL_API_KEY）")
+        raise SystemExit("请先设置环境变量 DEEPSEEK_API_KEY")
     _started = time.monotonic()
     _client = OpenAI(api_key=API_KEY, base_url=BASE_URL, max_retries=0)
     previous_home = os.environ.get("HERMES_HOME")

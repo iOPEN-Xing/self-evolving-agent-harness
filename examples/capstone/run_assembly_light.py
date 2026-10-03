@@ -2,12 +2,12 @@
 from common import *
 import copy,shutil,signal
 sys.path[:0]=[str(HERMES),str(SKILLCLAW),str(ROOT/'examples/assembly')]
-os.environ.pop('BIGMODEL_API_KEY',None)
+
 from assembly import config
 config.MODEL=MODEL;config.BASE_URL=BASE
 config.HERMES_SRC=HERMES;config.SKILLCLAW_SRC=SKILLCLAW
 # 显式覆盖取钥入口，既不读文件也不接受其他变量。
-config.api_key=lambda: os.environ['GLM_API_KEY']
+config.api_key=lambda: os.environ['DEEPSEEK_API_KEY']
 import run_assembly as original
 from assembly.contracts import tree_hashes,sha256_text,write_json
 from payment_grader import install

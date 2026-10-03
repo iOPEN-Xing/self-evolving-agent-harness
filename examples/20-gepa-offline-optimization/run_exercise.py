@@ -215,7 +215,7 @@ class Harness:
         else:
             environment = {k: os.environ[k] for k in ("PATH", "LANG", "LC_ALL", "TMPDIR", "SYSTEMROOT", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "all_proxy", "no_proxy") if k in os.environ}
             environment.update({"HERMES_HOME": str(home), "PYTHONDONTWRITEBYTECODE": "1"})
-            if os.environ.get("GLM_API_KEY"): environment["GLM_API_KEY"] = os.environ["GLM_API_KEY"]
+            if os.environ.get("DEEPSEEK_API_KEY"): environment["DEEPSEEK_API_KEY"] = os.environ["DEEPSEEK_API_KEY"]
             command = [str(WORKER_PYTHON), str(HERE / "hermes_worker.py"), str(run / "request.json")]
             if probe: command.append("--probe")
             start = time.monotonic()
@@ -223,7 +223,7 @@ class Harness:
                 completed = subprocess.run(command, env=environment, cwd=run, text=True, capture_output=True,
                                            timeout=min(BUDGET["max_case_seconds"], max(1, remaining)))
                 # API key 不进入命令、请求文件或日志；异常输出仍显式脱敏。
-                key = os.environ.get("GLM_API_KEY", "")
+                key = os.environ.get("DEEPSEEK_API_KEY", "")
                 for name, content in [("stdout.log", completed.stdout), ("stderr.log", completed.stderr)]:
                     (run / name).write_text(content.replace(key, "[REDACTED]") if key else content)
                 result = json.loads(response.read_text()) if response.exists() else {"error": f"worker_exit_{completed.returncode}", "llm_called": None}
@@ -287,10 +287,10 @@ class Observer:
 def reflection_lm(harness, prompt):
     remaining = harness.deadline - time.monotonic()
     if remaining <= 0: raise RuntimeError("search_wallclock_budget")
-    body = json.dumps({"model": "glm-5.2", "messages": [{"role": "system", "content": REFLECTION_CONTRACT}, {"role": "user", "content": prompt}],
+    body = json.dumps({"model": "deepseek-flash", "messages": [{"role": "system", "content": REFLECTION_CONTRACT}, {"role": "user", "content": prompt}],
                        "temperature": 0.6, "max_tokens": 1400, "thinking": {"type": "disabled"}}).encode()
-    req = urllib.request.Request("https://open.bigmodel.cn/api/paas/v4/chat/completions", data=body,
-          headers={"Authorization": "Bearer " + os.environ["GLM_API_KEY"], "Content-Type": "application/json"})
+    req = urllib.request.Request("https://api.deepseek.com/chat/completions", data=body,
+          headers={"Authorization": "Bearer " + os.environ["DEEPSEEK_API_KEY"], "Content-Type": "application/json"})
     start = time.monotonic()
     def timeout_handler(signum, frame):
         raise TimeoutError("反思请求墙钟预算到期")
@@ -298,9 +298,9 @@ def reflection_lm(harness, prompt):
     signal.setitimer(signal.ITIMER_REAL, min(BUDGET["max_case_seconds"], remaining))
     try:
         for attempt in range(1, 4):
-            harness.log("reflection_model_request", role="reflection", model="glm-5.2", attempt=attempt)
+            harness.log("reflection_model_request", role="reflection", model="deepseek-flash", attempt=attempt)
             try:
-                with urllib.request.urlopen(req, timeout=min(BUDGET["max_case_seconds"], remaining)) as response:
+                with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(req, timeout=min(BUDGET["max_case_seconds"], remaining)) as response:
                     result = json.load(response)
                 break
             except urllib.error.HTTPError as error:
@@ -321,7 +321,7 @@ def reflection_lm(harness, prompt):
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, old_handler)
-    harness.log("reflection_model_response", role="reflection", model="glm-5.2", prompt=prompt,
+    harness.log("reflection_model_response", role="reflection", model="deepseek-flash", prompt=prompt,
                 response=text, system_contract=REFLECTION_CONTRACT, usage=result.get("usage"), latency_seconds=time.monotonic() - start,
                 billed_cost=None, cost_status="未取得账单，不能用零代替")
     return text
@@ -361,6 +361,8 @@ def adoption(baseline, candidate, static, required_count):
 
 
 def main():
+    for name in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy"):
+        os.environ.pop(name, None)
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=["prepare", "verify", "run", "fault", "all"])
     args = parser.parse_args()
@@ -373,7 +375,7 @@ def main():
     pointer = {"version": "baseline", "skill_sha256": sha(FRONT + BASELINE), "directory": str(base_dir)}
     save(out / "service-version.json", pointer)
     import gepa
-    metadata = {"mode": args.mode, "key_present": bool(os.environ.get("GLM_API_KEY")),
+    metadata = {"mode": args.mode, "key_present": bool(os.environ.get("DEEPSEEK_API_KEY")),
                 "optimizer": "official gepa.optimize", "gepa_version": importlib.metadata.version("gepa"),
                 "gepa_api_signature": str(inspect.signature(gepa.optimize)), "gepa_module": str(Path(gepa.__file__).resolve()),
                 "hermes_commit": subprocess.check_output(["git", "-C", str(HERMES), "rev-parse", "HEAD"], text=True).strip(),
@@ -384,7 +386,7 @@ def main():
                 "search_budget_scope": "30次包含基线开发、官方搜索和3次候选完整验证；官方搜索预留这3次",
                  "official_gepa_called": False,
                 "completed_hermes_tasks": 0, "holdout_exposed_to_optimizer": False, "fault_is_separate": True,
-                "source_policy": "只读 Hermes 源目录；每题独立进程与 HERMES_HOME；凭据仅从 GLM_API_KEY 读取"}
+                "source_policy": "只读 Hermes 源目录；每题独立进程与 HERMES_HOME；凭据仅从 DEEPSEEK_API_KEY 读取"}
     save(out / "manifest.json", metadata)
     shutil.copytree(DATA_DIR, out / "data")
     (out / "source").mkdir()
@@ -420,8 +422,8 @@ def main():
             assert not adoption([good], [business_bad], static_check(BASELINE), 1)["adopt"]
             metadata["scorer_function_tests"] = "正确字段通过，缺失字段/JSON数组/代码围栏拒绝；相同分数不算最小收益；基础设施失败不算业务改善；未调用模型"
             metadata["verify_completed"] = True
-        if args.mode in ("run", "fault", "all") and not os.environ.get("GLM_API_KEY"):
-            metadata.update(status="blocked_missing_glm_api_key", stop_reason="缺少 GLM_API_KEY；没有启动搜索或故障注入",
+        if args.mode in ("run", "fault", "all") and not os.environ.get("DEEPSEEK_API_KEY"):
+            metadata.update(status="blocked_missing_deepseek_api_key", stop_reason="缺少 DEEPSEEK_API_KEY；没有启动搜索或故障注入",
                             normal_run="not_started", fault_run="not_started", adoption="数据不足，保留基线")
         elif args.mode in ("run", "fault", "all"):
             if args.mode in ("run", "all"):
@@ -547,7 +549,7 @@ def main():
     save(out / "manifest.json", metadata)
     save(OUTPUT_ROOT / "latest.json", {"run": str(out.relative_to(PROJECT)), "status": metadata["status"]})
     print(json.dumps({"output": str(out), "status": metadata["status"], "counts": harness.counts}, ensure_ascii=False))
-    if metadata["status"] in ("incomplete", "probe_failed", "blocked_missing_glm_api_key"):
+    if metadata["status"] in ("incomplete", "probe_failed", "blocked_missing_deepseek_api_key"):
         return 2
     return 0
 

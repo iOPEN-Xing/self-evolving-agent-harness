@@ -23,7 +23,7 @@ def main():
     home = Path(request["hermes_home"])
     os.environ["HERMES_HOME"] = str(home)
     sys.path.insert(0, str(root))
-    # 不读取项目或用户 .env。只允许父进程显式传来的 GLM_API_KEY。
+    # 不读取项目或用户 .env。只允许父进程显式传来的 DEEPSEEK_API_KEY。
     # 这是环境隔离适配，不改 Hermes 的模型调用或工具循环。
     import hermes_cli.env_loader as env_loader
     original_loader = env_loader.load_hermes_dotenv
@@ -56,7 +56,7 @@ def main():
         "loaded_names": names, "missing_names": missing,
         "reference_sha256": digest(reference_text.encode()),
         "hermes_entry": "AIAgent.run_conversation",
-        "model": "glm-5.2", "key_source": "GLM_API_KEY",
+        "model": "deepseek-flash", "key_source": "DEEPSEEK_API_KEY",
         "llm_called": False, "tool_trace": [],
     }
     tool_trace = record["tool_trace"]
@@ -82,11 +82,11 @@ def main():
         assert set(record["registered_tools"]) == {"query_payment"}, record["registered_tools"]
         record["probe_only"] = True
     else:
-        key = os.environ.get("GLM_API_KEY")
+        key = os.environ.get("DEEPSEEK_API_KEY")
         if not key:
-            raise RuntimeError("缺少 GLM_API_KEY；没有发出模型请求")
+            raise RuntimeError("缺少 DEEPSEEK_API_KEY；没有发出模型请求")
         agent = AIAgent(
-            model="glm-5.2", api_key=key, base_url="https://open.bigmodel.cn/api/paas/v4",
+            model="deepseek-flash", api_key=key, base_url="https://api.deepseek.com",
             provider="custom", api_mode="chat_completions", max_iterations=5,
             enabled_toolsets=["course_payment"], skip_context_files=True,
             skip_memory=True, load_soul_identity=False, quiet_mode=True,

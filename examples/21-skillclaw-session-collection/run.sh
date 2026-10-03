@@ -8,12 +8,10 @@ HERMES_SRC="${HERMES_SRC:-$REPO_ROOT/.deps/hermes-agent}"
 export HERMES_SRC
 cd "$REPO_ROOT"
 
-# 模型调用必须直连 GLM，不走 Clash 代理；git/uv/pip 才走代理。
+# 模型调用必须直连 DeepSeek，不走 Clash 代理；git/uv/pip 才走代理。
 unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
 
-# API key 仅从 GLM_API_KEY 或 BIGMODEL_API_KEY 环境变量读取。
-if [ -z "${GLM_API_KEY:-}" ] && [ -n "${BIGMODEL_API_KEY:-}" ]; then
-  export GLM_API_KEY="$BIGMODEL_API_KEY"
-fi
+# API key 仅从 DEEPSEEK_API_KEY 环境变量读取。
+: "${DEEPSEEK_API_KEY:?需要设置 DEEPSEEK_API_KEY}"
 
 exec "$HERMES_SRC/.venv/bin/python" "$HERE/session_collection.py"

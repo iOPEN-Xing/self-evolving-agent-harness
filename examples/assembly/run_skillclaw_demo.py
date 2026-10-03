@@ -89,8 +89,8 @@ def render_summary(report: dict, revision: SharedRevision) -> None:
         f"本次验收：**{status}**。运行目录：[{rel}]({rel}/acceptance.json)。",
         "",
         "```mermaid", "flowchart LR",
-        'A["实例 A / GLM 会话"] --> U["SkillClaw 原生会话上传"]',
-        'B["实例 B / GLM 会话"] --> U',
+        'A["实例 A / DeepSeek 会话"] --> U["SkillClaw 原生会话上传"]',
+        'B["实例 B / DeepSeek 会话"] --> U',
         'U --> E["HTTP trigger：摘要、评判、聚合、演化"]',
         'E --> V["skill_verifier"] --> D["独立 validator-D 重放与评分"]',
         'D --> P["再次 trigger：发布版本"] --> C["实例 C 拉取、读取技能、处理新订单"]',
@@ -162,16 +162,16 @@ def render_summary(report: dict, revision: SharedRevision) -> None:
         f"[执行时脚本副本]({rel}/source/run_skillclaw_demo.py)。",
         "- A/B 和 C 使用最小 OpenAI-compatible Agent；C 根据 SkillManager 提供的目录，"
         "通过只读工具读取实际拉取的 SKILL.md 后回答。此次未声称验证 Hermes 完整运行时集成。",
-        "- 第三方验证指独立的验证客户端和模型调用；演化与验证都用 glm-5.2，"
+        "- 第三方验证指独立的验证客户端和模型调用；演化与验证都用 deepseek-flash，"
         "不是不同厂商模型，也不是独立人工审查。ValidationWorker 重放的是源会话，"
         "C 则使用不同订单号及金额的新演示订单；单例行为变化不能证明总体泛化能力。",
         "- 内部队列 payops-confirm-17 / merchant-notify-23 是演示规程；仅 A/B 会话提供规程，"
         "C 前后两次问题相同且不含这些队列名。未人工编写或补改模型产生的候选技能。",
         "- 原生上传目前只有内部 Python 方法，因此适配器对该上游版本的接口有依赖。",
         "- 每次复跑使用新的存储分组和实例目录，保留先前证据，不删除历史运行。",
-        "", "本机此次使用现有配置助手读取 ~/.hermes/.env 中的 GLM_API_KEY。"
-        "外部环境原有 BIGMODEL_API_KEY 返回401，因此只在本次子进程中移除这个旧变量：",
-        "", "```bash", "env -u BIGMODEL_API_KEY .deps/hermes-agent/.venv/bin/python -B examples/assembly/run_skillclaw_demo.py", "```", "",
+        "", "本机此次使用现有配置助手读取 ~/.hermes/.env 中的 DEEPSEEK_API_KEY。"
+        "外部环境原有 DEEPSEEK_API_KEY 返回401，因此只在本次子进程中移除这个旧变量：",
+        "", "```bash", "env -u DEEPSEEK_API_KEY .deps/hermes-agent/.venv/bin/python -B examples/assembly/run_skillclaw_demo.py", "```", "",
         f"上游版本：`{report.get('upstream_commit', '未知')}`。",
         f"只读文件指纹核对：`{report.get('protected_unchanged', '未完成')}`。",
         f"密钥落盘检查：`{report.get('secret_scan', '未完成')}`。", "",
@@ -350,7 +350,7 @@ def main() -> int:
         report["passed"] = True
     except Exception as exc:
         message = f"{type(exc).__name__}: {exc}"
-        for name in ("GLM_API_KEY", "BIGMODEL_API_KEY", "OPENAI_API_KEY"):
+        for name in ("DEEPSEEK_API_KEY", "OPENAI_API_KEY"):
             if os.environ.get(name):
                 message = message.replace(os.environ[name], "[已隐藏密钥]")
         report["error"] = message
@@ -363,7 +363,7 @@ def main() -> int:
             report["passed"] = False
             report["error"] = report.get("error", "") + " 只读文件指纹发生变化，需核查并发写入。"
         # 只报告命中文件，不输出敏感值；检测范围包括整个本次输出和 C 实例。
-        secrets = [os.environ[k].encode() for k in ("GLM_API_KEY", "BIGMODEL_API_KEY", "OPENAI_API_KEY")
+        secrets = [os.environ[k].encode() for k in ("DEEPSEEK_API_KEY", "OPENAI_API_KEY")
                    if len(os.environ.get(k, "")) > 8]
         targets = list(root.rglob("*"))
         if "c_home" in locals():

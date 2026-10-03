@@ -1,6 +1,6 @@
 """第 21 讲：真实模型工具循环与跨实例会话收集。
 
-实例 A/B 的命令和结论由真实 GLM 工具循环生成；run_shell 只使用本地 mock
+实例 A/B 的命令和结论由真实 DeepSeek 工具循环生成；run_shell 只使用本地 mock
 回执，不执行系统命令、不访问运维网络。第三条 constructed 对照是手写轨迹，
 不能当作模型实跑。真实会话上传；手写对照另存，不进入学习队列。
 
@@ -9,7 +9,7 @@
 上传格式对齐 api_server._upload_session_data，供第 22 讲 evolve_server drain。
 
 运行：bash examples/21-skillclaw-session-collection/run.sh
-密钥仅从 GLM_API_KEY 或 BIGMODEL_API_KEY 环境变量读取。
+密钥仅从 DEEPSEEK_API_KEY 环境变量读取。
 """
 
 from __future__ import annotations
@@ -32,9 +32,9 @@ SHARED_STORE = Path(os.environ.get(
     str(REPO / "examples" / "22-skillclaw-shared-revision" / "output" / "shared_store"),
 ))
 GROUP_ID = "default"
-GLM_BASE = os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
-GLM_MODEL = os.environ.get("GLM_MODEL", "glm-5.2")
-API_KEY = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
+DEEPSEEK_BASE = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
+API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 INSTANCE_A_SKILLS = HERE / "output" / "instance_A" / "skills"
 COLLECTED_JSONL = HERE / "output" / "collected_sessions.jsonl"
 SKILL_NAME = "payment-timeout-troubleshoot"
@@ -95,14 +95,15 @@ def mock_run_shell(command: str) -> tuple[str, str, int]:
 
 
 def chat_completion(payload: dict) -> dict:
-    """用标准库直连 GLM；每次请求前移除代理环境变量，不记录密钥。"""
+    """用标准库直连 DeepSeek；每次请求前移除代理环境变量，不记录密钥。"""
     for key in ("http_proxy", "https_proxy", "all_proxy",
                 "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"):
         os.environ.pop(key, None)
     if not API_KEY:
-        raise RuntimeError("请先设置 GLM_API_KEY 或 BIGMODEL_API_KEY 环境变量")
+        raise RuntimeError("请先设置 DEEPSEEK_API_KEY 环境变量")
+    payload = {**payload, "thinking": {"type": "disabled"}}
     req = urllib.request.Request(
-        f"{GLM_BASE.rstrip('/')}/chat/completions",
+        f"{DEEPSEEK_BASE.rstrip('/')}/chat/completions",
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
         headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
         method="POST",
@@ -143,7 +144,7 @@ def shell_result(call_id: str, command: str, stdout: str, stderr: str, exit_code
     }
 
 
-class GlmToolLoopAgent:
+class ToolLoopAgent:
     """模型真实选择命令、读取 mock 回执并回答；不预设排障结论。"""
 
     def __init__(self, *, skill_md: str, alias: str, task_prompt: str, max_turns: int = 6):
@@ -155,7 +156,7 @@ class GlmToolLoopAgent:
         self.max_turns = max_turns
 
     def run(self) -> dict:
-        turn = new_turn(self.task_prompt, self.skill_view, "real_glm_toolloop")
+        turn = new_turn(self.task_prompt, self.skill_view, "real_deepseek_toolloop")
         messages = [
             {"role": "system", "content": (
                 "你是运维排障助手。下面 skill_view 是你实际持有的完整技能。"
@@ -181,9 +182,9 @@ class GlmToolLoopAgent:
         turn["rounds"] = []
         turn["stop_reason"] = "max_turns"
         for round_num in range(1, self.max_turns + 1):
-            print(f"  {self.alias}：请求 {GLM_MODEL}，第 {round_num}/{self.max_turns} 轮", flush=True)
+            print(f"  {self.alias}：请求 {DEEPSEEK_MODEL}，第 {round_num}/{self.max_turns} 轮", flush=True)
             message = chat_completion({
-                "model": GLM_MODEL, "messages": messages, "tools": tools,
+                "model": DEEPSEEK_MODEL, "messages": messages, "tools": tools,
                 "tool_choice": "auto", "temperature": 0.2,
             })
             calls = message.get("tool_calls") or []
@@ -270,10 +271,10 @@ def count_queued_sessions(hub) -> int:
     return len(list((SHARED_STORE / hub._prefix() / "sessions").glob("*.json")))
 
 
-def direct_call_glm(prompt: str) -> str:
+def direct_call_model(prompt: str) -> str:
     """直连对照：没有工具、没有技能注入、没有会话上传。"""
     message = chat_completion({
-        "model": GLM_MODEL,
+        "model": DEEPSEEK_MODEL,
         "messages": [
             {"role": "system", "content": "你是运维助手，用中文一句话回答。"},
             {"role": "user", "content": prompt},
@@ -352,7 +353,7 @@ def print_session_table(sessions: list[dict]) -> None:
 
 def main() -> None:
     if not API_KEY:
-        sys.exit("ERROR: 请先设置 GLM_API_KEY 或 BIGMODEL_API_KEY 环境变量")
+        sys.exit("ERROR: 请先设置 DEEPSEEK_API_KEY 环境变量")
 
     section("步骤 0：准备真实 SkillHub local 共享存储，清空旧会话队列")
     hub = build_hub()
@@ -367,16 +368,16 @@ def main() -> None:
     print(f"  push_skills 结果：{hub.push_skills(str(INSTANCE_A_SKILLS))}")
     skill_view = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
 
-    section("步骤 2：实例 A 真实 GLM 工具循环（工具环境为本地 mock）")
-    turn_a = GlmToolLoopAgent(
+    section("步骤 2：实例 A 真实 DeepSeek 工具循环（工具环境为本地 mock）")
+    turn_a = ToolLoopAgent(
         skill_md=skill_view, alias="instance-A",
         task_prompt=(
             "支付服务偶发超时。curl 健康检查正常、上游 provider ping 延迟也正常，但用户仍报 504。"
             "按你手里的 payment-timeout-troubleshoot 技能，用 run_shell 一步步排查，给我结论。"
         ),
     ).run()
-    section("步骤 3：实例 B 独立的真实 GLM 工具循环（同一 v1、同一 mock 规则）")
-    turn_b = GlmToolLoopAgent(
+    section("步骤 3：实例 B 独立的真实 DeepSeek 工具循环（同一 v1、同一 mock 规则）")
+    turn_b = ToolLoopAgent(
         skill_md=skill_view, alias="instance-B",
         task_prompt=(
             "另一套环境也报支付 504，健康检查和上游 provider ping 延迟看起来都正常，"
@@ -406,10 +407,10 @@ def main() -> None:
             print(f"  uploaded {key} ({session['user_alias']}, {session['source']})")
     print(f"  会话清单：{COLLECTED_JSONL}")
 
-    section("步骤 6：直连 GLM 缓存问答（无工具、无技能、不上传）")
+    section("步骤 6：直连 DeepSeek 缓存问答（无工具、无技能、不上传）")
     before = count_queued_sessions(hub)
     print(f"  直连调用前队列会话数：{before}")
-    print(f"  直连回答：{direct_call_glm('缓存命中率低怎么优化？一句话。')}")
+    print(f"  直连回答：{direct_call_model('缓存命中率低怎么优化？一句话。')}")
     after = count_queued_sessions(hub)
     print(f"  直连调用后队列会话数：{after}")
     if before == after:

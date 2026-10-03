@@ -10,7 +10,7 @@ seed=root/'seed/service-diagnosis/SKILL.md';seed.parent.mkdir(parents=True);seed
 def hub(store):return SkillHub(backend='local',endpoint='',bucket='',access_key_id='',secret_access_key='',local_root=str(store),group_id=group,user_alias='instance-A')
 direct=root/'direct';direct.mkdir();h=hub(direct/'store');write(root/'seed-push.json',h.push_skills(str(root/'seed')))
 with socket.socket() as so:so.bind(('127.0.0.1',0));port=so.getsockname()[1]
-cfg=SkillClawConfig(proxy_host='127.0.0.1',proxy_port=port,claw_type='hermes',configure_openclaw=False,llm_api_base=BASE,llm_api_key=os.environ['GLM_API_KEY'],llm_model_id=MODEL,served_model_name=MODEL,record_dir=str(root/'proxy'),record_enabled=True,use_prm=False,use_skills=False,sharing_enabled=True,sharing_backend='local',sharing_local_root=str(direct/'store'),sharing_group_id=group,sharing_user_alias='instance-A',skills_dir=str(root/'proxy-skills'),validation_enabled=False,dashboard_enabled=False,max_context_tokens=64000)
+cfg=SkillClawConfig(proxy_host='127.0.0.1',proxy_port=port,claw_type='hermes',configure_openclaw=False,llm_api_base=BASE,llm_api_key=os.environ['DEEPSEEK_API_KEY'],llm_model_id=MODEL,served_model_name=MODEL,record_dir=str(root/'proxy'),record_enabled=True,use_prm=False,use_skills=False,sharing_enabled=True,sharing_backend='local',sharing_local_root=str(direct/'store'),sharing_group_id=group,sharing_user_alias='instance-A',skills_dir=str(root/'proxy-skills'),validation_enabled=False,dashboard_enabled=False,max_context_tokens=64000)
 proxy=SkillClawAPIServer(cfg)
 @proxy.app.post('/collect/close/{sid}')
 async def close_session(sid:str):

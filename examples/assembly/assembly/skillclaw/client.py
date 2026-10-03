@@ -221,8 +221,8 @@ def publish(endpoint: str, evolution: dict | None = None, *, validator_alias: st
         write_json(result_path, payload)
         return payload
 
-    if not os.environ.get("GLM_API_KEY", "").strip():
-        raise RuntimeError("回放验证只读取环境变量 GLM_API_KEY")
+    if not os.environ.get("DEEPSEEK_API_KEY", "").strip():
+        raise RuntimeError("回放验证只读取环境变量 DEEPSEEK_API_KEY")
     cfg = _client_config(_safe_id(validator_alias))
     store = ValidationStore.from_config(cfg)
     jobs = store.list_jobs()
@@ -285,7 +285,7 @@ def run_task(instance_home: str | Path, prompt: str, *, load_skills: bool = True
              instance: str = "C", session_id: str | None = None, max_steps: int = 6) -> dict:
     """最小 OpenAI 工具调用 Agent：真实选读 SkillManager 目录中的技能。
 
-    本函数不是 Hermes 运行时。它使用真实 GLM 模型，提供仅能读取本实例
+    本函数不是 Hermes 运行时。它使用真实 DeepSeek 模型，提供仅能读取本实例
     已加载 SKILL.md 的 read 工具，保存模型选择、工具读取哈希和最终回答。
     """
     _upstream()
@@ -328,6 +328,7 @@ def run_task(instance_home: str | Path, prompt: str, *, load_skills: bool = True
             # 空目录或显式停用技能时，没有合法读取目标，不暴露 read 工具。
             if allowed:
                 request["tools"] = [read_tool]
+            request["extra_body"] = {**request.get("extra_body", {}), "thinking": {"type": "disabled"}}
             response = client.chat.completions.create(**request)
             message = response.choices[0].message
             assistant = message.model_dump(exclude_none=True)

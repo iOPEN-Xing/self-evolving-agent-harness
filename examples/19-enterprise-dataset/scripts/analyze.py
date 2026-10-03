@@ -200,7 +200,7 @@ def main():
                    hermes_execution_failures=sum(r['infrastructure_failure'] for r in rows),
                    paired_cases_available=len(differences), mean_difference=mean, conservative_lower_bound=lower,
                    margin=protocol['noninferiority_margin'], offline_conclusion=conclusion, production_noninferiority_proven=False,
-                   current_service='保留原代码服务', glm_live_acceptance=completed == len(rows),
+                   current_service='保留原代码服务', deepseek_live_acceptance=completed == len(rows),
                    langfuse_collection_acceptance=protocol.get('langfuse_collection_acceptance', False), online_business_acceptance=False,
                    local_gateway_chain_passed=bool(gateway.get('stable_assignment_passed') and gateway.get('mismatched_trace_rejected')),
                    local_gateway_verified_this_run=gateway_current, grader_selftest_passed=selftest['passed'],

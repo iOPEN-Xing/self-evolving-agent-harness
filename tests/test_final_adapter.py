@@ -38,7 +38,7 @@ def test_budget_error_after_report_cannot_advance_state(adapter, tmp_path, monke
         call("submit_report", report(), "report"), call("read_config", {}, "over-limit")])
     monkeypatch.setattr(adapter, "chat_completion", lambda payload: response)
     def run(prompt, ref, dispatch, context, messages):
-        return adapter.GlmToolLoopAgent("skill", prompt, "test", max_tool_calls=2,
+        return adapter.ToolLoopAgent("skill", prompt, "test", max_tool_calls=2,
                 tool_dispatch=dispatch, stage_context=context).run(messages)
     session, state = run_shift(scenario_id="training", ticks=[5], run_turn=run,
         run_id="test", shift_id="s", session_id="s1", events_path=tmp_path / "events.jsonl")
@@ -52,7 +52,7 @@ def test_loaded_skill_mutation_is_a_tool_error(adapter, tmp_path, monkeypatch):
     path.write_text("changed")
     monkeypatch.setattr(adapter, "chat_completion", lambda payload: dict(content="", tool_calls=[
         call("read_skill", {}, "read"), call("submit_report", report(), "report")]))
-    turn = adapter.GlmToolLoopAgent("original", "task", "test", skill_path=path).run()
+    turn = adapter.ToolLoopAgent("original", "task", "test", skill_path=path).run()
     assert turn["tool_errors"]
     assert turn["stop_reason"] != "final_answer"
 

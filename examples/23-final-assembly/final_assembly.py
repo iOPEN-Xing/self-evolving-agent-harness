@@ -2,11 +2,11 @@
 
 运行方式：
   cd 仓库根
-  export GLM_API_KEY=...
+  export DEEPSEEK_API_KEY=...
   unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
   .deps/hermes-agent/.venv/bin/python examples/23-final-assembly/final_assembly.py
 
-前台是 glm-5.2 与只读 mock 的真实工具循环，未启动完整 Hermes 实例。
+前台是 deepseek-flash 与只读 mock 的真实工具循环，未启动完整 Hermes 实例。
 候选仅由 evolve_server workflow validated 产生；评测采用后才进入加载目录。
 导入本模块不读取密钥、不清理输出、不发起模型请求；执行 main 时才运行流程。
 """
@@ -54,11 +54,11 @@ from shift import (run_shift, build_review_input, TOOL_SCHEMAS)
 from harness_engineering.process import run_bounded
 
 SKILL_NAME = "oncall-service-investigation"
-GLM_BASE = "https://open.bigmodel.cn/api/paas/v4"
-GLM_MODEL = "glm-5.2"
+DEEPSEEK_BASE = "https://api.deepseek.com"
+DEEPSEEK_MODEL = "deepseek-flash"
 RUN_SOURCE_MANIFEST = None
 RUN_STARTED = None
-API_KEY = ""  # main 中仅从 GLM_API_KEY 或 BIGMODEL_API_KEY 读取，不写入文件。
+API_KEY = ""  # main 中仅从 DEEPSEEK_API_KEY 读取，不写入文件。
 PROXY_KEYS = ("http_proxy", "https_proxy", "all_proxy",
               "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY")
 
@@ -96,9 +96,10 @@ def chat_completion(payload):
     """禁用环境和系统代理，仅返回模型 message，不保存请求头。"""
     for key in PROXY_KEYS:
         os.environ.pop(key, None)
-    key = API_KEY or os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
+    key = API_KEY or os.environ.get("DEEPSEEK_API_KEY")
+    payload = {**payload, "thinking": {"type": "disabled"}}
     request = urllib.request.Request(
-        f"{GLM_BASE}/chat/completions",
+        f"{DEEPSEEK_BASE}/chat/completions",
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
         method="POST",
@@ -110,7 +111,7 @@ def chat_completion(payload):
 
 
 def llm_call(messages, temperature=0.1, max_tokens=4000):
-    message = chat_completion({"model": GLM_MODEL, "messages": messages,
+    message = chat_completion({"model": DEEPSEEK_MODEL, "messages": messages,
                                "temperature": temperature, "max_tokens": max_tokens})
     return message.get("content") or ""
 
@@ -146,7 +147,7 @@ def parse_assessment(raw):
     return data
 
 
-class GlmToolLoopAgent:
+class ToolLoopAgent:
     """前台和评测共用的真实工具循环；只记录模型实际请求，不补写调用。"""
     def __init__(self, skill_view, task_prompt, alias, max_turns=6, *,
                  tool_dispatch=None, stage_context=None, skill_path=None,
@@ -162,7 +163,7 @@ class GlmToolLoopAgent:
                     read_skills=[], modified_skills=[], injected_skills=(
                         [SKILL_NAME] if self.skill_mode == 'prompt' else []),
                     tool_calls=[], tool_results=[], tool_errors=[], prm_score=None,
-                    source='real_glm_toolloop', skill_sha256=sha256(self.skill_view),
+                    source='real_deepseek_toolloop', skill_sha256=sha256(self.skill_view),
                     skill_mode=self.skill_mode, stop_reason='max_turns', rounds=[],
                     stage_context=self.context)
         if messages is None:
@@ -187,7 +188,7 @@ class GlmToolLoopAgent:
         for number in range(1, self.max_turns+1):
             log(f'{self.alias}：模型请求 {number}/{self.max_turns}')
             try:
-                message = chat_completion(dict(model=GLM_MODEL, messages=messages,
+                message = chat_completion(dict(model=DEEPSEEK_MODEL, messages=messages,
                     tools=[SKILL_TOOL, *TOOL_SCHEMAS, REPORT_TOOL], tool_choice='auto', temperature=.2,
                     max_tokens=5000))
             except Exception as exc:
@@ -260,7 +261,7 @@ class GlmToolLoopAgent:
 
 def turn_runner(skill_path, prefix):
     def run(prompt, ref, dispatch, context, messages):
-        return GlmToolLoopAgent(Path(skill_path).read_text(), prompt, prefix+'-'+ref,
+        return ToolLoopAgent(Path(skill_path).read_text(), prompt, prefix+'-'+ref,
             tool_dispatch=dispatch, stage_context=context, skill_path=skill_path,
             max_tool_calls=min(16, context['investigation_budget_remaining'])).run(messages)
     return run
@@ -268,7 +269,7 @@ def turn_runner(skill_path, prefix):
 
 def persist_session(db, session, cwd):
     sid = session['session_id']
-    db.create_session(sid, 'oncall', model=GLM_MODEL, cwd=str(cwd))
+    db.create_session(sid, 'oncall', model=DEEPSEEK_MODEL, cwd=str(cwd))
     db.set_session_title(sid, 'On-call '+sid)
     for turn in session['turns']:
         for msg in turn['messages'][turn['message_start']:]:
@@ -322,15 +323,15 @@ def run_evolve(store, publish_mode, tag):
     for key in PROXY_KEYS:
         env.pop(key, None)
     env.update({
-        "OPENAI_API_KEY": API_KEY, "OPENAI_BASE_URL": GLM_BASE,
-        "EVOLVE_MODEL": GLM_MODEL, "EVOLVE_USE_SESSION_JUDGE": "1",
+        "OPENAI_API_KEY": API_KEY, "OPENAI_BASE_URL": DEEPSEEK_BASE,
+        "EVOLVE_MODEL": DEEPSEEK_MODEL, "EVOLVE_USE_SESSION_JUDGE": "1",
         "PYTHONPATH": str(SKILLCLAW_DIR),
         "EVOLVE_HISTORY_LOG": str(OUTPUT_DIR / f"evolve_history_{tag}.jsonl"),
         "EVOLVE_PROCESSED_LOG": str(OUTPUT_DIR / f"evolve_processed_{tag}.json"),
     })
     command = [str(VENV_PY), "-m", "evolve_server", "--engine", "workflow", "--once",
                "--storage-backend", "local", "--local-root", str(store),
-               "--model", GLM_MODEL, "--publish-mode", publish_mode]
+               "--model", DEEPSEEK_MODEL, "--publish-mode", publish_mode]
     log(f"执行：{' '.join(command)}")
     try:
         proc = run_bounded(command, cwd=SKILLCLAW_DIR, env=env,
@@ -359,9 +360,9 @@ def main():
     started = time.monotonic()
     global RUN_STARTED
     RUN_STARTED = started
-    API_KEY = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY") or ""
+    API_KEY = os.environ.get("DEEPSEEK_API_KEY") or ""
     if not API_KEY.strip():
-        raise ValueError("请设置 GLM_API_KEY 或 BIGMODEL_API_KEY，密钥不能为空")
+        raise ValueError("请设置 DEEPSEEK_API_KEY，密钥不能为空")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=False)
     (EXAMPLE_DIR / 'output' / 'latest_oncall_run.txt').write_text(str(OUTPUT_DIR)+'\n')
     source_manifest = source.fingerprint(REPO_ROOT, __file__, (HERMES_SRC, SKILLCLAW_DIR))
@@ -518,7 +519,7 @@ def main():
         save_json(EVAL_REPORT_PATH, report)
         log(f"版本记录：{MANIFEST_PATH}；记录序号 {entry['version']}，采用技能标签 {adopted_version}")
         log(f"恢复点：{snap}")
-        db.create_session("oncall-extra", "lab", model=GLM_MODEL)
+        db.create_session("oncall-extra", "lab", model=DEEPSEEK_MODEL)
         db.append_message("oncall-extra", "user", content="快照之后添加的消息，恢复后应消失。")
     finally:
         db.close()
@@ -581,7 +582,7 @@ def main():
     )
     log(stance)
     log(f"本次实际分支：候选存在={candidate_content is not None}，decision={decision['decision']}，采用={adopted_version}。")
-    log("边界：前台跑 glm-5.2 + 只读 mock 工具循环作为工具循环参考实现，工具返回受控测试数据，未起完整 Hermes 实例。")
+    log("边界：前台跑 deepseek-flash + 只读 mock 工具循环作为工具循环参考实现，工具返回受控测试数据，未起完整 Hermes 实例。")
     log("边界：跨实例使用本地文件后端共享存储；未验收跨主机共享或生产部署。")
     log("边界：后台演化同步等待；未验收生产异步调度。")
     paths = {f"步骤 {step}": str(OUTPUT_DIR / f"step_{step:02d}.json") for step in range(10)}

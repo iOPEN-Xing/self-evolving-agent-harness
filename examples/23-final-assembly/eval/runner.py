@@ -1,7 +1,7 @@
 """评测运行器：在隔离环境中跑新旧版本 skill，输出结构化对比报告。
 
 隔离方式：run_case 为每个版本、每题创建独立工具环境和会话；
-前台与评测共用 run_shift 和 GlmToolLoopAgent，执行模型看不到评分要求。
+前台与评测共用 run_shift 和 ToolLoopAgent，执行模型看不到评分要求。
 """
 
 import time

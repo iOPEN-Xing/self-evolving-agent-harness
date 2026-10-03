@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""真实 glm-5.2 验收；所有演练技能、报告和日志只写入 output/eval。
+"""真实 deepseek-flash 验收；所有演练技能、报告和日志只写入 output/eval。
 
-运行前在仓库根 source ~/.hermes/.env，使用 Hermes venv 的 python -B。
+运行前在仓库根 export DEEPSEEK_API_KEY，使用 Hermes venv 的 python -B。
 采用和恢复只给出决策，不修改集成层的正式技能，不调用 lifecycle。
 """
 from __future__ import annotations
@@ -115,10 +115,10 @@ def _summary(result, reports, selfcheck, decisions):
     lines = ["# 评测与版本模块验收", "", f"运行时间：{result['finished_at']}；评分器：`{EVALUATOR_VERSION}`。",
              "", f"本轮目录：[查看完整记录]({result['attempt_relative']}/)。",
              "", "## 范围与运行方式", "",
-             "只改 assembly/eval/、run_eval_demo.py、output/eval/。模型真实请求 glm-5.2；",
+             "只改 assembly/eval/、run_eval_demo.py、output/eval/。模型真实请求 deepseek-flash；",
              "最小 agent 调用只读 query_order_payments，读取既有 orders.json；未启动完整 Hermes，未连接真实支付系统。",
              "每个版本、每个任务使用独立对话与客户端；模型只收到 prompt、技能和工具原始返回，不收到评分答案。",
-             "", "```bash", "# 在仓库根运行；不要开启 shell 的 xtrace", "set -a", "source ~/.hermes/.env", "set +a",
+             "", "```bash", "# 在仓库根运行；不要开启 shell 的 xtrace", "read -r -s DEEPSEEK_API_KEY", "export DEEPSEEK_API_KEY",
              "unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY",
              ".deps/hermes-agent/.venv/bin/python -B examples/assembly/run_eval_demo.py", "```", "",
              "## 一、评分器自检", "",
@@ -156,7 +156,7 @@ def _summary(result, reports, selfcheck, decisions):
                   "", "holdout 是同4笔订单的新问法，运行前固定，未给模型参考结论；它检验问法变化，不能证明新订单或生产分布的泛化。",
                   "评分器是支付场景的可审计规则，未知字段及未覆盖表述按失败处理；不宣称能理解任意中文。",
                   "一次小样本的观测不劣不是统计意义的非劣检验。集成层仍须验证快照清单与实际目录、执行 lifecycle，并记录执行结果。",
-                  "", "模型调用参数参照[智谱 GLM-5.2 官方说明](https://docs.bigmodel.cn/cn/guide/models/text/glm-5.2)。",
+                  "", "模型调用参数参照[DeepSeek DeepSeek Flash 官方说明](https://api-docs.deepseek.com/)。",
                   "", "## 统一证据入口", "",
                   "- [实现、评分修订及各轮取舍记录](REVIEW.md)。",
                   f"- [完整汇总 JSON]({result['attempt_relative']}/result.json)：报告、决策 checks、哈希和完成状态。",

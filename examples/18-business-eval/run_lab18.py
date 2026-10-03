@@ -16,8 +16,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 OUTPUT = HERE / 'output'
-MODEL = os.environ.get('GLM_MODEL', 'glm-5.2')
-BASE_URL = os.environ.get('GLM_BASE_URL', 'https://open.bigmodel.cn/api/paas/v4')
+MODEL = os.environ.get('DEEPSEEK_MODEL', 'deepseek-flash')
+BASE_URL = os.environ.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
 DATASET_VERSION = 'payment-cases-v3'
 EXPECTED_VERSION = 'payment-expected-v3'
 SCORING_VERSION = 'structured-payment-zh-v2'
@@ -136,9 +136,9 @@ def main():
     for name in list(os.environ):
         if name.lower().endswith('_proxy'):
             os.environ.pop(name, None)
-    api_key = os.environ.get('GLM_API_KEY') or os.environ.get('BIGMODEL_API_KEY')
+    api_key = os.environ.get('DEEPSEEK_API_KEY')
     if not api_key:
-        print('需要设置 GLM_API_KEY 或 BIGMODEL_API_KEY', file=sys.stderr)
+        print('需要设置 DEEPSEEK_API_KEY', file=sys.stderr)
         return 1
     from openai import OpenAI
     hashes = {'dataset':save(run_dir/'dataset.json', CASES),
@@ -162,6 +162,7 @@ def main():
                 request_started = time.perf_counter()
                 try:
                     response = client.chat.completions.create(
+                        extra_body={"thinking": {"type": "disabled"}},
                         model=MODEL, temperature=TEMPERATURE, max_tokens=2000,
                         messages=[{'role':'system','content':prompt},{'role':'user','content':user_message}])
                     raw = response.choices[0].message.content or ''
@@ -171,7 +172,7 @@ def main():
                     print(f"{version}/{case['id']}：业务={row['score']['business_pass']}，格式={row['score']['format_pass']}；{row['score']['answer_zh']}", flush=True)
                 except Exception as exc:
                     message = f'{type(exc).__name__}: {exc}'
-                    for key in (api_key,os.environ.get('BIGMODEL_API_KEY')):
+                    for key in (api_key,os.environ.get('DEEPSEEK_API_KEY')):
                         if key:
                             message = message.replace(key,'[密钥已隐藏]')
                     row['error'] = message

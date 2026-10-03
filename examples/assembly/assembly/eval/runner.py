@@ -98,17 +98,17 @@ def _skill_text(root: Path) -> str:
 
 
 def run_answers(skill_dir, cases) -> list[tuple[dict[str, Any], str]]:
-    """真实 glm-5.2 工具循环；凭证仅从当前进程环境读取，不自行加载密钥文件。"""
+    """真实 deepseek-flash 工具循环；凭证仅从当前进程环境读取，不自行加载密钥文件。"""
     from openai import OpenAI
     import httpx
 
     cases = copy.deepcopy(list(cases))
     _validate_cases(cases)
-    key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
+    key = os.environ.get("DEEPSEEK_API_KEY")
     if not key:
-        raise RuntimeError("缺少 GLM_API_KEY 或 BIGMODEL_API_KEY；请先 source ~/.hermes/.env")
-    if config.MODEL != "glm-5.2":
-        raise ValueError("本次验收固定使用 glm-5.2，请移除 ASSEMBLY_MODEL 覆盖")
+        raise RuntimeError("缺少 DEEPSEEK_API_KEY；请先 export DEEPSEEK_API_KEY")
+    if config.MODEL != "deepseek-flash":
+        raise ValueError("本次验收固定使用 deepseek-flash，请移除 ASSEMBLY_MODEL 覆盖")
     endpoint = urlsplit(config.BASE_URL)
     if endpoint.username or endpoint.password or endpoint.query or endpoint.fragment:
         raise ValueError("模型端点不得内嵌凭证、查询参数或片段")

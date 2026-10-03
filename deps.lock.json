@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "hermes-agent": {"repository": "NousResearch/hermes-agent", "commit": "aaf9688519cca58dd5f76a589a0911aff269b060"},
+    "hermes-agent-self-evolution": {"repository": "NousResearch/hermes-agent-self-evolution", "commit": "0a929e3aa20e15cf04dc7c28492a7d41a5139125"},
+    "SkillClaw": {"repository": "AMAP-ML/SkillClaw", "commit": "bf4dc2ee9430ecffb60e19630d26f57dfa2bd326"},
+    "OpenViking": {"repository": "volcengine/OpenViking", "commit": "7e47957da87a29ae9096161af7cc80fb6f074ec4"}
+  },
+  "notes": "源码提交可复现；运行覆盖与平台限制见 docs/DOCUMENTATION_VALIDATION.md。Hermes 与 SkillClaw 沿用课程引用版本，其余源在整理时解析并固定。"
+}

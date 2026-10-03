@@ -113,13 +113,14 @@ def expand_forward(db, hit, window=2):
 def main():
     started = time.monotonic()
     started_at = time.time()
-    api_key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
-    require(bool(api_key), "先设置 GLM_API_KEY 或 BIGMODEL_API_KEY 环境变量")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    require(bool(api_key), "先设置 DEEPSEEK_API_KEY 环境变量")
     print("本次持久化目录：", RUN_HOME.relative_to(HERE))
     session_db = SessionDB()
     agent = AIAgent(
-        model="glm-5.2", provider="glm", api_key=api_key,
-        base_url=os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4"),
+        reasoning_config={"enabled": False},
+        model="deepseek-flash", provider="deepseek", api_key=api_key,
+        base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         quiet_mode=True, max_iterations=6, enabled_toolsets=["file", "memory"],
         session_db=session_db,
     )
@@ -197,7 +198,7 @@ def main():
         print(f"搜索词：Orion；命中本次会话；match_message_id={anchor}")
         print(f"展开：{len(expanded_messages)} 条原始消息；工具配对 {len(expanded_pairs)} 组")
         summary = {
-            "model": "glm-5.2", "session_id": sid,
+            "model": "deepseek-flash", "session_id": sid,
             "state_directory": str(RUN_HOME.relative_to(HERE)),
             "message_count": len(restored), "paired_tool_calls": len(calls),
             "tool_names": list(calls.values()), "search_hit": True,

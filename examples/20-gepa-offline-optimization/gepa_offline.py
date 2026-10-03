@@ -13,9 +13,9 @@ holdout 在搜索结束后按独立预算执行，不回流本次搜索。固定
 
 运行方式（在本项目根目录，环境需安装 requests；macOS / Linux）：
   unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
-  export GLM_API_KEY=...
+  export DEEPSEEK_API_KEY=...
   .deps/hermes-agent/.venv/bin/python examples/20-gepa-offline-optimization/gepa_offline.py
-也可使用 BIGMODEL_API_KEY。不要把真实 key 写进本文件。
+也可使用 DEEPSEEK_API_KEY。不要把真实 key 写进本文件。
 """
 
 import hashlib
@@ -39,9 +39,9 @@ RUN_DIR = None
 SANDBOX_DIR = None
 EVIDENCE_PATH = None
 PROPOSED_PATH = None
-BASE_URL = "https://open.bigmodel.cn/api/paas/v4"
-MODEL = "glm-5.2"
-API_KEY = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY") or ""
+BASE_URL = "https://api.deepseek.com"
+MODEL = "deepseek-flash"
+API_KEY = os.environ.get("DEEPSEEK_API_KEY") or ""
 
 MAX_ROUNDS = 3
 # 保留 3 类任务和 3 轮反馈；每轮只评 1 个新候选，训练共 12 组，holdout 2 组。
@@ -884,7 +884,7 @@ def material_ledger():
 
 def write_json(path, data):
     text = json.dumps(data, ensure_ascii=False, indent=2, allow_nan=False)
-    for name in ("GLM_API_KEY", "BIGMODEL_API_KEY"):
+    for name in ("DEEPSEEK_API_KEY",):
         key = os.environ.get(name)
         if key:
             text = text.replace(key, "[密钥已隐藏]")
@@ -922,7 +922,7 @@ def material_hashes(paths):
 def main():
     global REQUEST_COUNT
     if not API_KEY:
-        print("请先 unset 代理并 export GLM_API_KEY=...（或 BIGMODEL_API_KEY）")
+        print("请先 unset 代理并 export DEEPSEEK_API_KEY=...")
         return 1
     runtime = setup_run()
     TRAIN_MATERIALS.clear()

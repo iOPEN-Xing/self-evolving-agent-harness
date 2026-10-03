@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """总装真实验收：all，或 smoke/learn/candidate/eval/shared/snapshot。
 
-先 source ~/.hermes/.env，再用 .deps/hermes-agent/.venv/bin/python -B 运行。
+先 export DEEPSEEK_API_KEY，再用 .deps/hermes-agent/.venv/bin/python -B 运行。
 --run-id 可继续同一次运行；已成功阶段经来源校验后复用，不反复搜索赢家。
 所有模块只 import 复用。父进程把 config.OUTPUT_DIR 的内存值指向本轮
 output/assembly-runs/<id>，避免覆盖四模块旧证据；源码配置不变。
@@ -38,13 +38,12 @@ REQUIRES = {'smoke': (), 'learn': (), 'candidate': ('learn',), 'eval': ('candida
 
 
 def require_environment():
-    if not os.environ.get('GLM_API_KEY', '').strip():
-        raise RuntimeError('先把 GLM_API_KEY 加载到环境变量；本入口不读取密钥文件。')
-    os.environ.pop('BIGMODEL_API_KEY', None)
+    if not os.environ.get('DEEPSEEK_API_KEY', '').strip():
+        raise RuntimeError('先把 DEEPSEEK_API_KEY 加载到环境变量；本入口不读取密钥文件。')
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
     config.clear_proxy_for_model()
-    if config.MODEL != 'glm-5.2' or config.BASE_URL != 'https://open.bigmodel.cn/api/paas/v4':
-        raise ValueError('本次验收固定 glm-5.2 与指定智谱端点。')
+    if config.MODEL != 'deepseek-flash' or config.BASE_URL != 'https://api.deepseek.com':
+        raise ValueError('本次验收固定 deepseek-flash 与指定DeepSeek端点。')
     config.ensure_paths()
 
 
@@ -108,7 +107,7 @@ def worker(request_file):
         except Exception as exc:
             # 原入口在 finally 保存全部观测；后台失败不是前台失败。
             error = {'type': type(exc).__name__,
-                     'message': str(exc).replace(os.environ['GLM_API_KEY'], '[密钥已隐藏]')}
+                     'message': str(exc).replace(os.environ['DEEPSEEK_API_KEY'], '[密钥已隐藏]')}
         check((evidence / 'foreground.json').exists(), '前台没有产生 TaskRun。')
         task = read(evidence / 'foreground.json')
         observation = read(evidence / 'observation.json')
@@ -578,7 +577,7 @@ class Assembly:
         except BaseException as exc:
             entry['status'] = 'failed'
             entry['error'] = {'type': type(exc).__name__,
-                              'message': str(exc).replace(os.environ['GLM_API_KEY'], '[密钥已隐藏]')}
+                              'message': str(exc).replace(os.environ['DEEPSEEK_API_KEY'], '[密钥已隐藏]')}
             raise
         finally:
             entry['elapsed_sec'] = time.time() - started
@@ -613,7 +612,7 @@ class Assembly:
         self.trace['all_passed'] = False
         self.save()
         self.render_report()
-        key = os.environ['GLM_API_KEY'].encode()
+        key = os.environ['DEEPSEEK_API_KEY'].encode()
         files.update(p for p in self.adopted.rglob('*') if p.is_file())
         # 包括本轮获准修改的适配层与新增封装，不能只扫描总入口和运行材料。
         changed_sources = {SCRIPT, *(config.ASSEMBLY_DIR / 'assembly' / 'skillclaw').glob('*.py')}
@@ -622,7 +621,7 @@ class Assembly:
         leaked = [str(p) for p in sorted(files) if key in p.read_bytes()]
         self.trace['secret_scan'] = {'passed': not leaked, 'file_count': len(files), 'matched_files': leaked,
                                      'source_files': sorted(str(p) for p in changed_sources),
-                                     'method': '仅在内存比较当前 GLM_API_KEY 字节；不输出值'}
+                                     'method': '仅在内存比较当前 DEEPSEEK_API_KEY 字节；不输出值'}
         audit_ok = (self.trace['protected_unchanged'] and self.trace['script_unchanged']
                     and not changed_nodes and not modified and not leaked)
         self.trace['audit_passed'] = bool(audit_ok)
@@ -686,11 +685,11 @@ class Assembly:
             f"六阶段均已结束：`{completed}`；审计通过：`{self.trace.get('audit_passed', False)}`。验证拒绝或网络错误均保留原因，不计为通过。",
             f'统一索引：[assembly_trace.json](assembly_trace.json)；[本轮不可混用的记录]({relative}/trace.json)。', '',
             '目标与授权：仅修复总编排与 SkillClaw publish 适配层的网络超时、有限重试和进程隔离，'
-            '随后按本轮请求真实调用 glm-5.2。保留四模块的其他逻辑、公共配置、契约、场景、上游源码和旧 SUMMARY；不操作飞书。'
+            '随后按本轮请求真实调用 deepseek-flash。保留四模块的其他逻辑、公共配置、契约、场景、上游源码和旧 SUMMARY；不操作飞书。'
             '所有来源在本轮开始时记录指纹，结束时复核；本轮修改不混入旧运行。', '',
             '父进程仅把 config.OUTPUT_DIR 的内存值指向本轮目录，隔离旧验收资料。'
             '正式采用目录是本轮 adopted/payment-status-investigation；从既有已采用版整树复制。'
-            '所有 Hermes 实例位于原 output/homes/<instance>，逐个独立子进程；密钥仅来自已加载的 GLM_API_KEY。', '',
+            '所有 Hermes 实例位于原 output/homes/<instance>，逐个独立子进程；密钥仅来自已加载的 DEEPSEEK_API_KEY。', '',
             '```mermaid', 'flowchart LR', 'F[真实前台] --> L[原生 daemon 复盘] --> C[隔离候选]',
             'C --> E[评分器自检与成对评测] --> D[ADOPT 或 REJECT]',
             'D --> AB[两个来源实例] --> S[上传 演化 验证 发布] --> T[第三实例新订单]',
@@ -731,19 +730,19 @@ class Assembly:
                   f"共享结果：`{shared.get('outcome', '尚未运行')}`；检查 job 数={validation.get('checked_jobs', '未知')}，完成验证数={validation.get('validated_jobs', '未知')}，验证错误数={validation.get('error_jobs', '未知')}，跳过数={validation.get('skipped_jobs', '未知')}；原因：{validation.get('reason', '尚无记录')}。",
                   f"逐 job 子进程与超时记录：{shared_link('validation_worker.json')}；原始验证结果：{shared_link('validation_results.json')}；发布回执与完整诊断：{link('shared', 'publication.json')}。",
                   f"共享阶段正式目录未改变：`{shared.get('formal_unchanged', '未知')}`。网络持续失败记为验证错误，不按业务失败打分；拒绝与验证错误均不能使候选被发布或由第三实例加载。",
-                  '回放的 GLM chat 与 PRM 评分由 publish 适配层在子进程内设置单次 240 秒总超时、最多两次重试，退避 1、2 秒；每个 validation job 最长 600 秒，期限覆盖全部 case、chat、评分和重试，可提前截断重试预算。超时终止并回收子进程。shared 返回后进入 audit；all 模式还继续 snapshot。', '',
+                  '回放的 DeepSeek chat 与 PRM 评分由 publish 适配层在子进程内设置单次 240 秒总超时、最多两次重试，退避 1、2 秒；每个 validation job 最长 600 秒，期限覆盖全部 case、chat、评分和重试，可提前截断重试预算。超时终止并回收子进程。shared 返回后进入 audit；all 模式还继续 snapshot。', '',
                   '## 覆盖范围与边界', '',
                   '- 各项真实执行结果以上表与证据为准；未完成步骤不会因报告存在而计为通过。订单为已有 scenarios 受控教学数据，不是生产支付查询。',
-                  '- 评测沿用现有最小 GLM 工具循环；主集四单，holdout 为相同四单的新问法。四份运行相互独立，评分规则未改；单轮结果不证明统计泛化。',
+                  '- 评测沿用现有最小 DeepSeek 工具循环；主集四单，holdout 为相同四单的新问法。四份运行相互独立，评分规则未改；单轮结果不证明统计泛化。',
                   '- 共享 A/B 使用本轮 Hermes 真实任务；C 采用既有 SkillManager 与轻量工具 Agent，只有验证通过并发布后才拉取及读取 SKILL.md；是否完成以 comparison.json 为准。尚未覆盖完整 Hermes 的共享技能发现与消费。共享使用上游 LocalObjectStore，未覆盖远程 OSS 与跨主机并发。',
                   '- 上游轻量重放没有支付工具，所以来源任务在实际调用开始前含原始订单快照，Hermes 仍实际调用查询核对；上传保留原提示与真实工具回执。C 原生客户端标签为 C，报告另外记录它的唯一 home 实例别名。',
-                  '- 服务端 verifier 和客户端重放均使用 glm-5.2；独立调用不等于独立厂商或人工审查。内部 route 是演示规程，仅来源任务给出，C 提示不含答案。',
+                  '- 服务端 verifier 和客户端重放均使用 deepseek-flash；独立调用不等于独立厂商或人工审查。内部 route 是演示规程，仅来源任务给出，C 提示不含答案。',
                   '- 本轮选择真实后台复盘接入候选；没有额外运行 Curator 或 GEPA，也没有声称每轮必有提升。REJECT 后仍可从保留的正式版分享真实任务经验。',
                   '- 背景复盘是 daemon。验收在前台返回后等待结束以保留材料；不能由此推断进程异常退出时也能可靠完成。失败/超时留档，前台成功独立核对。',
                   '- 模块没有 adopt()；入口仅补充哈希检查和整目录切换。两次 rename 不构成断电事务，旧正式目录备份留存；同一 run-id 通过文件锁串行执行。',
                   '- 快照恢复在独立副本真实进行（修改主文件、删除嵌套文件、改二进制、增加多余文件和删除空目录）。未制造已采用版业务退化，因此没有虚构 RESTORE 决策。',
                   '- 上游会话上传使用内部方法；runtime 的技能哈希本身不能证明读取，本入口另外保留实际注入的文件正文与消息。后台模块已旁录上游 failed 返回值未被原生警告覆盖的情况。', '',
-                  '## 复跑与审计', '', '```bash', 'set -a', 'source ~/.hermes/.env', 'set +a',
+                  '## 复跑与审计', '', '```bash', 'read -r -s DEEPSEEK_API_KEY', 'export DEEPSEEK_API_KEY',
                   'unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY',
                   '.deps/hermes-agent/.venv/bin/python -B examples/assembly/run_assembly.py all',
                   '# 单阶段会先运行缺少的前置阶段；--run-id 可续用同一版本的成功结果',

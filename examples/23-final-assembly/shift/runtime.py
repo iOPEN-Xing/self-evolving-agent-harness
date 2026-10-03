@@ -122,7 +122,7 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
         raise ValueError('续班时钟不能倒退或重复，不能重放恢复窗口')
     session = dict(session_id=session_id, run_id=run_id, shift_id=shift_id,
                    incident_id=state['incident_id'], user_alias=user_alias,
-                   source='real_glm_toolloop', timestamp=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),
+                   source='real_deepseek_toolloop', timestamp=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),
                    expected_turns=len(ticks), turns=[], received_investigation=investigation_record or [])
     messages = None
     for tick in ticks:

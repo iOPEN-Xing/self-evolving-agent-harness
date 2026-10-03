@@ -2,7 +2,7 @@
 """第 14 讲练习：外部记忆 Provider。
 
 立场：记忆可外置、可移植，但要清楚 Provider 的边界。
-用真实 Hermes AIAgent + glm-5.2：
+用真实 Hermes AIAgent + deepseek-flash：
   1. 自定义一个 MemoryProvider 子类（文件后端），注册进 MemoryManager。
   2. 演示 prefetch / sync_turn 生命周期：一轮结束 sync_turn 存，下一轮 prefetch 召回。
   3. 演示边界：外置记忆存在自己的文件里，内置 MEMORY.md 不动。
@@ -100,10 +100,10 @@ class FileBackedMemory(MemoryProvider):
 
 def main():
     started = time.perf_counter()
-    api_key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
-    base_url = os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
     if not api_key:
-        print("ERROR: 先 export GLM_API_KEY（或 BIGMODEL_API_KEY，见 run.sh）", file=sys.stderr)
+        print("ERROR: 先 export DEEPSEEK_API_KEY（见本章 run.sh）", file=sys.stderr)
         sys.exit(1)
     print("使用全新 HERMES_HOME；运行目录 =", OUTPUT.name)
 
@@ -112,13 +112,14 @@ def main():
 
     builtin_mem.write_text("系统约定：部署前先核验配置。\n", encoding="utf-8")
     builtin_before = builtin_mem.read_bytes()
-    model = os.environ.get("GLM_MODEL", "glm-5.2")
+    model = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
     turns = []
 
     def make_agent():
         # 本练习只验证外部 provider，不开放会主动改写内置记忆的工具。
         current = AIAgent(
-            model=model, provider="glm", api_key=api_key, base_url=base_url,
+        reasoning_config={"enabled": False},
+            model=model, provider="deepseek", api_key=api_key, base_url=base_url,
             quiet_mode=True, max_iterations=6, enabled_toolsets=[],
         )
         current._memory_manager = MemoryManager()

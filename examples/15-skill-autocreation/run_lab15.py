@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """第 15 讲练习：后台自主决定新建 Skill、修订已有 Skill 或不更新。
 
-业务经历是构造数据，复盘和内容生成使用真实的 glm-5.2 调用。
+业务经历是构造数据，复盘和内容生成使用真实的 deepseek-flash 调用。
 每次在独立 LAB_HOME 中种入两个已有 Skill，读取其全文后交给模型判断。
 每次结果单独保存在 output/run-*/decision.json，旧运行目录保留。
 脚本重现方法选择与真实 skill_manage 写入，不验证原生触发及新会话自动采用。
@@ -9,10 +9,10 @@
 运行方式（从专栏根目录开始，在 Hermes venv 中运行）：
   cd .deps/hermes-agent && \\
     unset http_proxy https_proxy all_proxy no_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY && \\
-    export GLM_API_KEY='在本机填入密钥' && \\
+    export DEEPSEEK_API_KEY='在本机填入密钥' && \\
     .venv/bin/python ../../examples/15-skill-autocreation/run_lab15.py
 
-也支持 BIGMODEL_API_KEY；密钥仅从环境变量读取。
+凭证仅从 DEEPSEEK_API_KEY 环境变量读取。
 脚本还会清除当前进程中所有名称以 _proxy 结尾的环境变量（不区分大小写）。
 """
 
@@ -33,8 +33,8 @@ HERMES_SRC = Path(
 ).expanduser().resolve()
 HERMES_ROOT = HERMES_SRC
 OUTPUT_ROOT = Path(__file__).resolve().parent / "output"
-BASE_URL = os.environ.get("GLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
-MODEL = os.environ.get("GLM_MODEL", "glm-5.2")
+BASE_URL = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
 
 SEED_SKILLS = {
     "log-error-debugging": """---
@@ -159,7 +159,7 @@ def main():
     skills_dir.mkdir(parents=True)
     (lab_home / "memories").mkdir()
     (lab_home / "config.yaml").write_text(
-        'model:\n  default: "glm-5.2"\n  provider: "glm"\n'
+        'model:\n  default: "deepseek-flash"\n  provider: "deepseek"\n'
         'terminal:\n  backend: local\n  cwd: "."\nskills:\n  disabled: []\n',
         encoding="utf-8",
     )
@@ -167,7 +167,7 @@ def main():
         if key.lower().endswith("_proxy"):
             os.environ.pop(key, None)
     os.environ["HERMES_HOME"] = str(lab_home)
-    os.environ["GLM_BASE_URL"] = BASE_URL
+    os.environ["DEEPSEEK_BASE_URL"] = BASE_URL
     record = {
         "decision": "NOT_EVALUATED", "reasoning": "尚未取得模型决策",
         "target_skill": "", "constructed_business_data": True,
@@ -200,6 +200,7 @@ def main():
     def ask(prompt, *, json_only=False):
         record["real_llm_call"] = True  # 已发起真实 API 调用，不代表调用一定成功。
         response = client.chat.completions.create(
+            extra_body={"thinking": {"type": "disabled"}},
             model=MODEL, temperature=0.25, max_tokens=3000,
             messages=[
                 {"role": "system", "content": (
@@ -216,10 +217,10 @@ def main():
 
     print(f"第 15 讲：复盘选择与真实 Skill 写入\n本次目录 = {output_dir.name}")
     try:
-        api_key = os.environ.get("GLM_API_KEY") or os.environ.get("BIGMODEL_API_KEY")
+        api_key = os.environ.get("DEEPSEEK_API_KEY")
         if not api_key:
-            raise RuntimeError("请先设置 GLM_API_KEY 或 BIGMODEL_API_KEY")
-        os.environ["GLM_API_KEY"] = api_key
+            raise RuntimeError("请先设置 DEEPSEEK_API_KEY")
+        os.environ["DEEPSEEK_API_KEY"] = api_key
         sys.path.insert(0, str(HERMES_ROOT))
         try:
             import hermes_constants
@@ -244,7 +245,7 @@ def main():
             meta = frontmatter(content, yaml)
             inventory.append({"name": meta["name"], "description": meta["description"], "SKILL.md": content})
         context = "任务经历：\n" + BUSINESS_EXPERIENCE + "\n当前技能库清单及全文：\n" + json.dumps(inventory, ensure_ascii=False, indent=2)
-        print("正在调用 glm-5.2，自主选择新建、修订或不更新……")
+        print("正在调用 deepseek-flash，自主选择新建、修订或不更新……")
         raw = ask(context + """
 请判断这次经历中有没有值得沉淀为可复用方法的内容，以及如何处置。
 结合现有 Skill 的适用范围、方法和本次经验作判断；不要把单次业务状态直接当作通用方法。
@@ -335,7 +336,7 @@ YAML frontmatter 含 name（小写字母、数字及连字符，最多64字符�
         # 保留模型已作出的选择；执行错误不能伪装成 NO_UPDATE 或其他决策。
         record["execution_status"] = "error"
         message = f"{type(exc).__name__}: {exc}"
-        for secret in (os.environ.get("GLM_API_KEY"), os.environ.get("BIGMODEL_API_KEY")):
+        for secret in (os.environ.get("DEEPSEEK_API_KEY"),):
             if secret:
                 message = message.replace(secret, "[密钥已隐藏]")
         record["error"] = message

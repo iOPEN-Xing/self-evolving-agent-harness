@@ -104,15 +104,15 @@ class Client:
         self.session_id = f'{label}-{uuid.uuid4().hex}'
         if with_model:
             from run_agent import AIAgent
-            key = os.environ.get('GLM_API_KEY') or os.environ.get('BIGMODEL_API_KEY')
+            key = os.environ.get('DEEPSEEK_API_KEY')
             if not key:
-                raise RuntimeError('--with-model 需要 GLM_API_KEY 或 BIGMODEL_API_KEY')
+                raise RuntimeError('--with-model 需要 DEEPSEEK_API_KEY')
             previous_home = os.environ.get('HERMES_HOME')
             os.environ['HERMES_HOME'] = str(self.home)
             try:
-                self.agent = AIAgent(model=os.environ.get('GLM_MODEL', 'glm-5.2'),
-                    provider='glm', api_key=key,
-                    base_url=os.environ.get('GLM_BASE_URL', 'https://open.bigmodel.cn/api/paas/v4'),
+                self.agent = AIAgent(model=os.environ.get('DEEPSEEK_MODEL', 'deepseek-flash'),
+                    provider='deepseek', api_key=key,
+                    base_url=os.environ.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com'),
                     quiet_mode=True, max_iterations=6, enabled_toolsets=[], skip_memory=True,
                     session_db=self.db)
             finally:

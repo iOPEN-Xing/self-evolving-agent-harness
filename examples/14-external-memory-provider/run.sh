@@ -2,7 +2,7 @@
 # 第 14 讲练习运行脚本：外部记忆 Provider（生命周期 / 边界 / 故障隔离）。
 #
 # 用法：
-#   GLM_API_KEY=你的智谱key bash run.sh
+#   DEEPSEEK_API_KEY=你的DeepSeekkey bash run.sh
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -12,9 +12,9 @@ export HERMES_SRC
 
 unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
 
-export GLM_API_KEY="${GLM_API_KEY:-${BIGMODEL_API_KEY:-}}"
-: "${GLM_API_KEY:?需要 export GLM_API_KEY（智谱 key）}"
-export GLM_BASE_URL="${GLM_BASE_URL:-https://open.bigmodel.cn/api/paas/v4}"
+export DEEPSEEK_API_KEY="${DEEPSEEK_API_KEY:-}"
+: "${DEEPSEEK_API_KEY:?需要 export DEEPSEEK_API_KEY（DeepSeek key）}"
+export DEEPSEEK_BASE_URL="${DEEPSEEK_BASE_URL:-https://api.deepseek.com}"
 
 cd "$HERMES_SRC"
 mkdir -p "$HERE/output"
