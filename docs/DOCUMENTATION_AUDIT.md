@@ -1,6 +1,6 @@
 # 逐份文档复核：知识、代码与证据范围
 
-本次以 `becc7a1` 为基线，检查全部 41 份原有 Markdown 和 9 份 Notebook 的阅读内容，新增本记录后共有 42 份 Markdown。每份按用途核对问题、机制、条件、案例推理、源码定位和结论范围。章节补充不同的知识重点；操作 Skill 保持简明协议，历史报告保持原实验含义。
+此前以 `becc7a1` 为基线检查 41 份原有 Markdown 和 9 份 Notebook，新增本记录后有 42 份 Markdown，结果对应 `a5ff8f5`。本轮继续基于该版本应用 Romain 项目讲述方法，逐份补入设计判断、取舍、证据范围与追问；新增 [项目面试指南](INTERVIEW_GUIDE.md) 后共 43 份 Markdown。下表保留前轮知识重点，本轮覆盖与规则见下文。
 
 ## 怎样判断内容可信
 
@@ -59,9 +59,9 @@
 
 ## Notebook 阅读内容
 
-九份 Notebook 各新增一个 `labNN-knowledge` Markdown 单元，在清理前归纳本次观察应支持什么判断。保留原有主流程与单元 ID；第 03 章摘录补齐实际调用中的文件范围和失败停止条件。`check_notebook_quotes` 检查 Python 摘录是实际某个代码格的连续片段，允许缩进和空行不同，不判断解释质量。
+前轮在九份 Notebook 各新增一个 `labNN-knowledge` Markdown 单元，在清理前归纳观察应支持什么判断。本轮在这些单元内补充面试讲述，不增删单元或修改代码。前轮第 03 章摘录补齐实际调用中的文件范围和失败停止条件；`check_notebook_quotes` 检查 Python 摘录是实际某个代码格的连续片段，允许缩进和空行不同，不判断解释质量。
 
-第 01 章仅改动一条凭证错误提示，将 GLM API Key 改为 DEEPSEEK_API_KEY；其它 8 份 Notebook 的代码格内容、执行计数、输出与元数据保持。新增知识小结不产生模型调用。整份文件哈希改变，旧迁移运行仍只对应其旧源码，不被改写为当前版本实跑。
+前轮第 01 章仅改动一条凭证错误提示，将 GLM API Key 改为 DEEPSEEK_API_KEY；其它 8 份 Notebook 的代码格内容、执行计数、输出与元数据保持。本轮九份均只改阅读内容，不产生模型调用。整份文件哈希改变，旧迁移运行仍只对应其旧源码，不被改写为当前版本实跑。
 
 | Notebook | 主要知识判断 | 当前核对 |
 |---|---|---|
@@ -82,10 +82,26 @@
 
 外部协议核对使用 [DeepSeek Codex 接入](https://api-docs.deepseek.com/quick_start/agent_integrations/codex/)、[思考模式](https://api-docs.deepseek.com/guides/thinking_mode/) 与 [工具调用](https://api-docs.deepseek.com/guides/tool_calls/)。官网说明支持原生 Responses；思考模式下带工具的 Chat 历史需要正确保留 reasoning_content，课程自建循环因此明确关闭 thinking。恢复与进程说明继续参考 [SQLite Backup API](https://www.sqlite.org/backup.html) 和 [Python 3.12 subprocess](https://docs.python.org/3.12/library/subprocess.html)。协议与模型可变化，本文不将官方页面当作本地课程已运行的证据。
 
-当前安装技能目录、插件清单与公开检索没有定位到准确的 romain-skill 来源。本次没有安装猜测项或声称使用该技能，按源码对照和现有质量流程完成逐份整理。
+此前在 Codex 技能目录及公开检索中未定位到 romain-skill，前轮没有声称使用。随后扩大本地检索，在用户 Cursor 技能目录找到同名技能，并核对多个副本一致；本轮已读取核心模型、面试准备、技术路径与来源索引，按其高覆盖的项目讲述原则逐份优化。个人技能文件保持本地，仓库仅记录方法应用及技术依据。
+
+## Romain 逐份应用范围
+
+原有 42 份 Markdown 均有实际内容变更：41 份补入各自案例的讲述与追问，1 份供模型执行的 payment-report Skill 重组核查步骤与解释要求。操作 Skill 保持商户、订单、币种、截止时点、整数分、净额、状态、依据编号和纯 JSON 契约；没有将面试叙事加入模型执行指令。正文调整改变提示版本，旧模型结果仍只对应旧提示。
+
+9 份 Notebook 在原有 `labNN-knowledge` 单元补入设计判断与追问，不增删单元，不修改代码、执行计数、输出或元数据。稳定定位和 19 段 Python 摘录继续核对。新增面试指南说明上游与个人工作的归属，提供总述、付款案例、替代方案、坏例、成本、发布与恢复的追问路线。
+
+逐份主张仍按源码人工复核。`check_contracts` 与 `check_links` 承担入口、限定符号、摘录、定位及发布链接检查；它们不自动评价面试表达质量、业务效果或生产能力。历史日志和 `docs/validation/` 原始摘要保持原内容，本轮未新增付费模型调用。
 
 ## 验证与实际结论
 
-文档契约扩展到全部 42 份 Markdown。Notebook 稳定 ID 与代码摘录均检查；摘录回归先在旧检查器上失败，再修复通过。完整 `make verify` 包括源码/Notebook 编译、数据格式、shell、Ruff 与离线回归；验收数字以最终检查输出为准。
+前轮文档契约覆盖 42 份 Markdown，摘录回归先在旧检查器上失败，再修复通过。本轮新增指南后覆盖 43 份 Markdown，并绑定 `run.measured_decide`、`decide` 与 `Assembly.candidate` 的实际归属。Notebook 稳定 ID 与 19 段代码摘录继续检查；完整 `make verify` 包括源码/Notebook 编译、数据格式、shell、Ruff 与离线回归，145 项测试通过。本轮检查了 525 个本地发布链接；这些数字不表示新增真实模型或业务验收。
 
 本次没有新增付费模型运行。第 18 章此前的真实结果 4/4 → 4/4 仍无通过率增益；新订单与第二轮学习没有新增结果。内容审阅、离线通过、历史实跑和生产验收是不同证据层次，不能由本记录互相补足。
+
+## 面试讲述与追问
+
+我的复核方法是让每份文档的主张都对应明确来源：输入说明条件，代码说明行为，回执说明观察，独立评分说明任务结果。全文覆盖记录能发现遗漏，机械检查能发现引用失配；它们仍不能自动判断技术推理。现在补入 Romain 的项目讲述与追问，用替代方案和失败条件检查这些解释能否经受面试深挖。
+
+**追问：逐份写了复核记录，为什么还需要实际源码审阅？** 覆盖表证明检查对象被列出，不能证明一句话的业务含义。应挑核心主张沿调用、状态和读写核对，再用反例挑战；自动检查只承担其明确验证的范围。
+
+讲述时可打开 [check_docs.py](../scripts/check_docs.py)、[test_doc_contracts.py](../tests/test_doc_contracts.py) 核对实现或原始记录；个人贡献与结果的表述规则见 [项目面试指南](INTERVIEW_GUIDE.md)。

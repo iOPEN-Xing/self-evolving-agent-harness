@@ -46,3 +46,11 @@
 四个上游的完整提交由 [deps.lock.json](deps.lock.json) 固定，获取脚本是 [setup_deps.sh](scripts/setup_deps.sh)。其中 Hermes aaf9688519cca58dd5f76a589a0911aff269b060、SkillClaw bf4dc2ee9430ecffb60e19630d26f57dfa2bd326 沿用课程引用版本。
 
 模型统一 deepseek-flash，官网直连；依赖与凭证准备见 [MODEL_SETUP](docs/MODEL_SETUP.md)。源码可复现不等于已完成整轮模型与平台验证，实际覆盖见 [本轮验证](docs/DOCUMENTATION_VALIDATION.md)。
+
+## 面试讲述与追问
+
+我按工程依赖组织学习路线：先能观察执行，再维护经验，随后独立比较方法，最后验证传播与恢复。这样面试讲一个故障时，可以从业务问题选入口，再沿依赖回补机制；例如新版没起效，先查上下文加载，再查业务评分和共享版本。章节覆盖表达学习范围，不能把二十多组独立实验算成一个生产流程。
+
+**追问：为什么不按框架名介绍项目？** 框架名不能说明要解决的故障。先讲目标、正确条件和证据，再解释所选机制与替代方案；课程表用于定位源码，真实覆盖仍按各章运行记录判断。
+
+讲述时可打开 [chapters.json](docs/chapters.json)、[SELF_EVOLUTION.md](docs/SELF_EVOLUTION.md) 核对实现或原始记录；个人贡献与结果的表述规则见 [项目面试指南](docs/INTERVIEW_GUIDE.md)。

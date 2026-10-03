@@ -616,6 +616,29 @@
         ]
       },
       "notebook_cells": []
+    },
+    {
+      "id": "interview-guide",
+      "document": "docs/INTERVIEW_GUIDE.md",
+      "entrypoints": [
+        "examples/capstone/run_assembly_light.py",
+        "examples/assembly/run_assembly.py",
+        "examples/assembly/assembly/eval/policy.py",
+        "examples/assembly/run_skillclaw_demo.py",
+        "docs/validation/payment-eval-summary.json"
+      ],
+      "symbols": {
+        "examples/capstone/run_assembly_light.py": [
+          "run.measured_decide"
+        ],
+        "examples/assembly/assembly/eval/policy.py": [
+          "decide"
+        ],
+        "examples/assembly/run_assembly.py": [
+          "Assembly.candidate"
+        ]
+      },
+      "notebook_cells": []
     }
   ]
 }

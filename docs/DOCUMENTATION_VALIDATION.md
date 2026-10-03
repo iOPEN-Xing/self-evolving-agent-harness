@@ -53,3 +53,11 @@
 本轮没有将 11、13–17、19–23、Assembly 与 Capstone 的全部付费路径逐一执行；其原生接口、候选、采用与跨实例结果不能借前九章或 Memory / Eval 的通过补齐。旧 GLM 运行描述属于原场景与版本，不是本轮 DeepSeek 验证。
 
 Linux CI 只检查离线行为；第 17 / 19 章的 macOS 沙箱、跨主机共享、生产鉴权与分布式发布补偿需要单独验收。第 20 章独立留出没有在本轮消耗，Capstone 新订单保留题未运行；没有统计泛化或生产收益结论。
+
+## 面试中怎样解释本记录
+
+这份记录用于说明哪种协议下实际运行了哪些路径。我会按连接、Turn、工具回执、业务评分和结论范围解释结果，而不把“完成”合成一个成功率。Memory 的失败与修订记录也保留；第 18 章两版 4/4 只支持当前四题同样通过。这里的源码与结果属于 633dc89，当前文档变动没有自动产生新的模型验收。
+
+**追问：为什么保留失败案例，不只展示最后通过结果？** 失败暴露调用形状、内容保持与检查器的薄弱环节，能说明修复依据。保留版本和原始条件以后，才知道最后通过验证了什么；删掉失败会夸大可靠性。
+
+讲述时可打开 [notebook-runs.json](validation/notebook-runs.json)、[memory-revision.json](validation/memory-revision.json)、[payment-eval-summary.json](validation/payment-eval-summary.json) 核对实现或原始记录；个人贡献与结果的表述规则见 [项目面试指南](INTERVIEW_GUIDE.md)。

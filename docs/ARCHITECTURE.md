@@ -96,3 +96,11 @@ assembly 整目录恢复先验证快照与暂存副本，再替换目录；切�
 以上任务未由本轮离线检查验收。接入真实业务时，从一项只读任务及影子流量开始，逐步完成 [运行手册](RUNBOOK.md) 的验收门槛。
 
 参考实现依据：[SQLite Backup API](https://www.sqlite.org/backup.html)、[Python subprocess](https://docs.python.org/3.12/library/subprocess.html)、[Hermes 会话导入导出](https://github.com/NousResearch/hermes-agent/blob/aaf9688/hermes_state_portability.py)。
+
+## 面试讲述与追问
+
+我的架构判断是让模型提出行动与方法，让控制器核对事实、预算和版本。候选先隔离，评分与实际加载分别绑定内容；相比模型直接写在线规则，这样有明确的拒绝与恢复出口。接入时先选择原生支付或自建巡检路线，二者不能混称。跨主机发布、租户授权和分布式事务仍是部署工作，离线通过不补足这些能力。
+
+**追问：为什么不用更复杂的多 Agent 系统？** 当前首先要解决的是证据归属与受控更新，多加实例可能放大状态和权限问题。先把一项只读任务的基线、候选、评分与加载打通，再依据独立并发需求增加组件。
+
+讲述时可打开 [runtime.py](../examples/23-final-assembly/shift/runtime.py)、[contracts.py](../examples/assembly/assembly/contracts.py) 核对实现或原始记录；个人贡献与结果的表述规则见 [项目面试指南](INTERVIEW_GUIDE.md)。

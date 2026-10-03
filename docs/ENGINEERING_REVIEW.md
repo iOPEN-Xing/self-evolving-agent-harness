@@ -58,3 +58,11 @@
 该轮开发锁只覆盖离线环境，当时真实安装脚本仍获取上游当前分支；后续 `setup_deps.sh` 已按 deps.lock.json 固定四个上游源码，实际安装依赖仍需单独记录。哈希核验不是签名认证；本地采用与远端发布还没有分布式事务。实际业务落地所需的版本冻结、权限、资源、影子流量、统计评测与发布补偿见 [架构边界](ARCHITECTURE.md) 和 [运行手册](RUNBOOK.md)。
 
 当前文档与 DeepSeek 迁移验证见 [DOCUMENTATION_VALIDATION](DOCUMENTATION_VALIDATION.md)。
+
+## 面试中怎样解释本记录
+
+讲工程优化时，我会选择可复现的故障说明前后差别。例如旧快照恢复会过早清空数据库，修复后先验证清单并隔离导入，完整核验才激活；对应故障回归确认损坏输入不会破坏原库。这比“优化了代码质量”更具体。本页的测试数字和平台范围属于历史工程轮次，后续增量检查另行引用，不能把离线修复说成生产收益。
+
+**追问：测试覆盖了损坏快照，是否意味着任意恢复故障都安全？** 只支持已覆盖行为；并发写入、跨资源事务和进程崩溃仍有独立边界。讲述时列出故障输入、原库保持条件、回归检查及未覆盖场景。
+
+讲述时可打开 [test_snapshot.py](../tests/test_snapshot.py)、[test_manifest.py](../tests/test_manifest.py)、[DOCUMENTATION_VALIDATION.md](DOCUMENTATION_VALIDATION.md) 核对实现或原始记录；个人贡献与结果的表述规则见 [项目面试指南](INTERVIEW_GUIDE.md)。

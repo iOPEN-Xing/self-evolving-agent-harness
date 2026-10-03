@@ -85,6 +85,7 @@ export DEEPSEEK_API_KEY
 
 ## 工程文档
 
+- [项目面试指南](docs/INTERVIEW_GUIDE.md)：Romain 项目讲述、个人贡献、设计取舍与证据追问。
 - [架构与可信边界](docs/ARCHITECTURE.md)：原生组件、自建循环、候选与发布之间的责任。
 - [运行与故障处置](docs/RUNBOOK.md)：证据核对、时限、失败记录与恢复。
 - [工程复核记录](docs/ENGINEERING_REVIEW.md)：上一轮修复与离线测试范围。
@@ -93,3 +94,11 @@ export DEEPSEEK_API_KEY
 - [逐份文档复核](docs/DOCUMENTATION_AUDIT.md)：当前内容、源码依据和历史材料的解释范围。
 
 输出与 .deps 默认留在本机；历史 GLM 记录保持原始来源。学习资料来源、MIT 许可证和上游归属保留。本仓库中的演练不自动具备跨主机一致性、生产鉴权、分布式发布事务或统计意义上的业务提升证明。
+
+## 面试讲述与追问
+
+我基于这套开源课程做了工程化整理，目标是让 Agent 的经验更新可解释、可验证、失败可恢复。系统把真实工具经历交给后台生成 Skill 候选，再由固定业务评分与版本策略决定是否采用，后续任务核对实际加载。我的整理重点是故障边界、来源绑定、文档与代码对应以及统一验收。当前能明确解释 Skill 层的一轮受控更新；已有四题对照 4/4 → 4/4 没有测得增益，生产效果与持续第二轮仍需验证。
+
+**追问：项目最有工程价值的部分是什么？** 能把错误定位到执行、候选、评分、采用或加载阶段，并阻止缺失证据进入发布。例如快照先隔离导入、评分缺失拒绝采用、任务加载绑定内容哈希。价值应以具体回归和运行记录说明，不能只数模型或框架数量。
+
+讲述时可打开 [ENGINEERING_REVIEW.md](docs/ENGINEERING_REVIEW.md)、[SELF_EVOLUTION.md](docs/SELF_EVOLUTION.md)、[verify.py](scripts/verify.py) 核对实现或原始记录；个人贡献与结果的表述规则见 [项目面试指南](docs/INTERVIEW_GUIDE.md)。
