@@ -448,6 +448,174 @@
         ]
       },
       "notebook_cells": []
+    },
+    {
+      "id": "guide-readme-md",
+      "document": "README.md",
+      "entrypoints": [
+        "deps.lock.json",
+        "scripts/setup_deps.sh",
+        "docs/chapters.json"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-course-map-md",
+      "document": "COURSE_MAP.md",
+      "entrypoints": [
+        "docs/chapters.json",
+        "deps.lock.json"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-examples-readme-md",
+      "document": "examples/README.md",
+      "entrypoints": [
+        "examples/notebook_support.py",
+        "examples/build_notebooks.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-architecture-md",
+      "document": "docs/ARCHITECTURE.md",
+      "entrypoints": [
+        "examples/23-final-assembly/shift/runtime.py",
+        "examples/23-final-assembly/versioning/policy.py",
+        "examples/assembly/assembly/contracts.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-model-setup-md",
+      "document": "docs/MODEL_SETUP.md",
+      "entrypoints": [
+        "scripts/setup_deps.sh",
+        "scripts/model_probe.py",
+        "examples/notebook_support.py",
+        "requirements-dev.lock.txt"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-runbook-md",
+      "document": "docs/RUNBOOK.md",
+      "entrypoints": [
+        "scripts/verify.py",
+        "examples/23-final-assembly/versioning/snapshot.py",
+        "examples/assembly/run_assembly.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-documentation-plan-md",
+      "document": "docs/DOCUMENTATION_PLAN.md",
+      "entrypoints": [
+        "docs/chapters.json",
+        "docs/validation/notebook-runs.json"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-documentation-validation-md",
+      "document": "docs/DOCUMENTATION_VALIDATION.md",
+      "entrypoints": [
+        "docs/validation/notebook-runs.json",
+        "docs/validation/payment-eval-summary.json",
+        "docs/validation/memory-revision.json"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-engineering-plan-md",
+      "document": "docs/ENGINEERING_PLAN.md",
+      "entrypoints": [
+        "tests/test_snapshot.py",
+        "tests/test_source.py",
+        "tests/test_policy.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-engineering-review-md",
+      "document": "docs/ENGINEERING_REVIEW.md",
+      "entrypoints": [
+        "tests/test_shift.py",
+        "tests/test_manifest.py",
+        "scripts/setup_deps.sh"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-evolution-review-md",
+      "document": "docs/EVOLUTION_REVIEW.md",
+      "entrypoints": [
+        "scripts/check_docs.py",
+        "tests/test_doc_contracts.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-examples-capstone-readme-oncall-md",
+      "document": "examples/capstone/README-oncall.md",
+      "entrypoints": [
+        "examples/capstone/capstone.py",
+        "examples/23-final-assembly/versioning/policy.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-examples-capstone-new-order-reserve-readme-md",
+      "document": "examples/capstone/new-order-reserve/README.md",
+      "entrypoints": [
+        "examples/capstone/new-order-reserve/inputs/NEW-101.json",
+        "examples/capstone/new-order-reserve/inputs/NEW-102.json",
+        "examples/capstone/new-order-reserve/inputs/NEW-103.json",
+        "examples/capstone/new-order-reserve/grader-only/NEW-101.json"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-examples-19-enterprise-dataset-skill-payment-report-skill-md",
+      "document": "examples/19-enterprise-dataset/skill/payment-report/SKILL.md",
+      "entrypoints": [
+        "examples/19-enterprise-dataset/scripts/convert.py",
+        "examples/19-enterprise-dataset/scripts/grader.py",
+        "examples/19-enterprise-dataset/evals/grader-only/payment-004.json"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "guide-docs-documentation-audit-md",
+      "document": "docs/DOCUMENTATION_AUDIT.md",
+      "entrypoints": [
+        "scripts/check_docs.py",
+        "tests/test_doc_contracts.py",
+        "docs/chapters.json"
+      ],
+      "symbols": {
+        "scripts/check_docs.py": [
+          "check_contracts",
+          "check_links",
+          "check_notebook_quotes"
+        ]
+      },
+      "notebook_cells": []
     }
   ]
 }

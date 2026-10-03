@@ -6,6 +6,8 @@
 
 ## Notebook 路线
 
+阅读一章时，先写下当前业务问题及正确判断的必要条件，再沿函数或单元 ID 找输入、工具返回与产物。最后改变一个条件构成反例，检查机制是否仍作出有依据的判断。章节中的推理解释和练习帮助完成这三步，运行命令只负责启动实验。
+
 从 [第 01 章](01-agent-loop/README.md) 开始，每讲 README 对应 workshop.ipynb 的稳定单元 ID。使用 Python 3.12 与 openai-codex==0.154.0，模型为 deepseek-flash。未设置 DEEPSEEK_API_KEY 时公共准备用隐藏输入框；不读取其他供应商密钥。
 
 [notebook_support.py](notebook_support.py) 启动课程独立连接、保留脱敏请求与 Turn、配对命令回执、处理超时和释放资源。观察服务原样转发 Responses 到官网，已移除 LiteLLM 转换。每次 .runtime/run_id 权限为当前用户私有，保存本次 work 和请求，清理连接不删除证据。
@@ -19,6 +21,8 @@
 后半程运行使用 .deps/hermes-agent/.venv/bin/python。第 20 章优化器有独立锁文件与环境；第 17 / 19 章 OS 沙箱目前依赖 macOS。原生 [Assembly](assembly/README.md) 与 [Capstone](capstone/README.md) 是另两条有明确阶段和证据的路线。
 
 ## 生成、证据与复核
+
+四份 `11–14/output_timing.txt` 是保留的历史文本。第 11 章旧日志把 Memory 间隔为 0 写成总开关，当前触发还包括 Skill；第 12 章旧日志的单次调用形状不覆盖当前批量操作；第 13 章固定条数只属于当次会话，提到的内部日志未随仓库发布；第 14 章回答中的 `<tool_call>` 文本也不能当实际工具回执。阅读这些文件时按当前章节和调用记录解释，不能据旧文字扩展当前结论。
 
 [build_notebooks.py](build_notebooks.py) 是早期生成器，保留作来源参考；当前读者版 Notebook 有额外的阅读和观察设计，不要运行它覆盖已有 workshop。教学源 Notebook 不提交执行输出。
 
