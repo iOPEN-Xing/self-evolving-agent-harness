@@ -10,9 +10,25 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def symbol_names(tree):
+    """保留短名兼容旧契约，同时用 Class.method 区分同名方法的归属。"""
+    names = set()
+
+    def visit(node, scope=()):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            names.add(node.name)
+            scope = (*scope, node.name)
+            names.add(".".join(scope))
+        for child in ast.iter_child_nodes(node):
+            visit(child, scope)
+
+    visit(tree)
+    return names
+
+
 def check_contracts(root=ROOT):
     contract = json.loads((root / "docs/chapters.json").read_text())
-    chapters = contract["chapters"]
+    chapters = contract["chapters"] + contract.get("guides", [])
     if len({row["id"] for row in chapters}) != len(chapters):
         raise ValueError("章节编号重复")
     for chapter in chapters:
@@ -32,18 +48,18 @@ def check_contracts(root=ROOT):
                     raise ValueError(f"Notebook 单元定位失配：{entry}")
         for entry, expected in chapter["symbols"].items():
             tree = ast.parse((root / entry).read_text())
-            names = {node.name for node in ast.walk(tree)
-                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))}
+            names = symbol_names(tree)
             if not set(expected) <= names or any(f"`{name}`" not in text for name in expected):
                 raise ValueError(f"文档与代码符号失配：{entry}")
     return len(chapters)
 
 
 def check_links(root=ROOT):
-    names = subprocess.check_output(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-                                    cwd=root).decode().split("\0")
+    names = set(filter(None, subprocess.check_output(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=root).decode().split("\0")))
     count = 0
-    for name in sorted(set(filter(None, names))):
+    for name in sorted(names):
         path = root / name
         if path.suffix != ".md":
             continue
@@ -55,6 +71,13 @@ def check_links(root=ROOT):
             local = (path.parent / parsed.path).resolve()
             if not local.exists():
                 raise ValueError(f"失效本地链接：{name} → {raw}")
+            if not local.is_relative_to(root.resolve()):
+                raise ValueError(f"本地链接超出发布仓库：{name} → {raw}")
+            relative = local.relative_to(root.resolve()).as_posix()
+            included = relative in names if local.is_file() else (
+                relative == "." or any(item.startswith(relative + "/") for item in names))
+            if not included:
+                raise ValueError(f"本地链接目标未随仓库发布：{name} → {raw}")
             count += 1
     return count
 
@@ -62,7 +85,7 @@ def check_links(root=ROOT):
 def main():
     chapters = check_contracts()
     links = check_links()
-    print(f"文档检查：{chapters} 个章节契约，{links} 个本地链接")
+    print(f"文档检查：{chapters} 个文档契约，{links} 个本地链接")
 
 
 if __name__ == "__main__":
