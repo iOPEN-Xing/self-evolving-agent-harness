@@ -2,12 +2,19 @@
 """只评最终结果；不读取历史采纳率替候选计分。"""
 import json,os,re
 ALIASES={'paid':'paid','到账':'paid','已到账':'paid','pending':'pending','处理中':'pending','受理未终结':'pending','partial':'partial','部分付款':'partial','unpaid':'unpaid','未付款':'unpaid','overpaid':'overpaid','超额付款':'overpaid'}
+def unique_fields(pairs):
+    # 禁止 JSON 后一个同名字段覆盖前一个，避免互相矛盾的答案被静默修正。
+    result={}
+    for key,value in pairs:
+        if key in result: raise ValueError('JSON字段重复')
+        result[key]=value
+    return result
 def grade(final,oracle,exit_code=0):
     errors=[]
     if exit_code!=0: return dict(passed=False,errors=['运行退出码非零'],failure_kind='execution')
     try:
         text=final.strip()
-        obj=json.loads(text); actual=obj['orders']; expected=oracle['orders']
+        obj=json.loads(text,object_pairs_hook=unique_fields); actual=obj['orders']; expected=oracle['orders']
         keys=lambda rows:[(r['merchant_id'],r['order_id']) for r in rows]
         ak,ek=keys(actual),keys(expected)
         if len(set(ak))!=len(ak): errors.append('重复订单')
