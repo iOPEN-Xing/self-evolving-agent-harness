@@ -68,8 +68,12 @@ bash examples/16-skill-incremental-patch/run.sh
 
 `full_method_pack_verified`、`business_effect_verified`、原生触发与新会话采用状态仍为 `false`。完整方法包还包括支持文件和引用；自动发现、加载、实际业务表现及正式采用需要另行验证。旧运行没有 `verify_missing.txt`，不能把新增场景说成已经实跑。
 
+## 在学习循环中的作用
+
+更新对象从新文件进一步细化为已有方法和参考材料。脚本核对了真实保存与本轮文字推演；正式采用还应冻结完整方法包，运行独立任务并评分，第 18 章开始建立这套比较条件。
+
 ## 工程应用与观察练习
 
 生产更新先读目标与支持文件，再按版本生成补丁，用完整方法包评测。工具操作依次写盘，没有整体回滚，中途失败可能留下半份更新。Python read_text 不等于后台 skill_view 读取标记，native_read_before_write_verified 仍为 false。推演只检查非空、semantic_verdict 未判定，不可作为采用证据。
 
-选出一项成功状态，沿来源、函数、调用和文件核对，说明它能证明哪一步。再为未验证状态列出需要补充的证据。
+对照 SKILL.md 与 references/payment-records.md 的前后差异，找出分次付款条件改变了哪个判断步骤。再指出三个文字推演中哪些判断还缺实际工具回执，设计相应的独立业务题。

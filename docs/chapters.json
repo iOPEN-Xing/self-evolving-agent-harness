@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "chapters": [
     {
       "id": "01-agent-loop",
@@ -395,6 +395,49 @@
       "document": "docs/10-learning-loop.md",
       "entrypoints": [],
       "symbols": {},
+      "notebook_cells": []
+    }
+  ],
+  "guides": [
+    {
+      "id": "self-evolution",
+      "document": "docs/SELF_EVOLUTION.md",
+      "entrypoints": [
+        "examples/capstone/run_assembly_light.py",
+        "examples/assembly/run_assembly.py",
+        "examples/assembly/assembly/runtime/foreground.py",
+        "examples/assembly/assembly/lifecycle/skills.py",
+        "examples/assembly/assembly/eval/policy.py",
+        "examples/capstone/payment_grader.py",
+        "examples/assembly/scenarios/orders.json"
+      ],
+      "symbols": {
+        "examples/assembly/run_assembly.py": [
+          "Assembly.smoke",
+          "Assembly.learn",
+          "Assembly.candidate",
+          "Assembly.eval",
+          "Assembly.install_adopted",
+          "Assembly.snapshot"
+        ],
+        "examples/capstone/run_assembly_light.py": [
+          "run",
+          "run.measured_decide",
+          "hermes_answers",
+          "worker",
+          "LightAssembly.shared"
+        ],
+        "examples/assembly/assembly/runtime/foreground.py": [
+          "make_agent",
+          "run_task"
+        ],
+        "examples/assembly/assembly/lifecycle/skills.py": [
+          "create_candidate"
+        ],
+        "examples/assembly/assembly/eval/policy.py": [
+          "decide"
+        ]
+      },
       "notebook_cells": []
     }
   ]

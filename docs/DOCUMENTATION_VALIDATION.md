@@ -1,4 +1,6 @@
-# 文档、代码与 DeepSeek 验证
+# DeepSeek 迁移验证记录（633dc89）
+
+本页保留提交 `633dc89` 对应的真实模型与离线验证结果。后续的自进化表述和文档检查升级见 [复核记录](EVOLUTION_REVIEW.md)；后续离线通过不会改变或扩展下面的真实模型覆盖范围。
 
 本轮在 macOS、Python 3.12.14 下整理整套章节。主线 01–23 章均有对应文档，第 10 章是机制桥接；另整理 Assembly、Capstone 和快照附录。章节路径、代码入口、函数与稳定 Notebook 单元 ID 由 [chapters.json](chapters.json) 声明，`scripts/check_docs.py` 检查失效引用。
 

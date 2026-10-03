@@ -4,6 +4,8 @@
 
 第 01 至 09 讲使用 Codex SDK 与 Jupyter Notebook；第 11 至 23 讲使用 Python 脚本，分别调用 Hermes、SkillClaw 原生接口或练习自建的模型与工具循环，具体实现以各讲 README 为准。第 17 讲生命周期练习不调用模型。
 
+[自进化主线](docs/SELF_EVOLUTION.md) 将这些机制连接到“经历、候选、验证、决定、实际重用”。表中的课程主题描述学习目标；本次代码实现与真实验证范围按各章及验证记录判断。
+
 | 部分 | 讲次 | 技术主题 | 练习实现 |
 | --- | --- | --- | --- |
 | 初识 Harness | 01 | Agent Loop | [examples/01-agent-loop/](examples/01-agent-loop/) |
@@ -28,12 +30,12 @@
 | 可信可控 | 20 | 离线优化 | [examples/20-gepa-offline-optimization/](examples/20-gepa-offline-optimization/) |
 | 群体进化 | 21 | 离线程序记忆：怎样为 Skill 修订准备可靠经历？ | [examples/21-skillclaw-session-collection/](examples/21-skillclaw-session-collection/) |
 | 群体进化 | 22 | 技能共享与分发 | [examples/22-skillclaw-shared-revision/](examples/22-skillclaw-shared-revision/) |
-| 群体进化 | 23 | 完整的自进化巡检 Agent | [examples/23-final-assembly/](examples/23-final-assembly/) |
-| 综合实践 | CP | 端到端自进化实战 | [examples/capstone/](examples/capstone/) |
+| 群体进化 | 23 | 受控巡检：候选、评测、版本与恢复 | [examples/23-final-assembly/](examples/23-final-assembly/) |
+| 综合实践 | CP | 原生支付学习循环与独立采用决定 | [examples/capstone/](examples/capstone/) |
 
 ## 代码与文档契约
 
-各章的稳定入口、函数和 Notebook 单元见 [chapters.json](docs/chapters.json)，由 scripts/check_docs.py 检查。单元 ID 比编辑后易变的行号更适合定位。
+各章及跨章专题的稳定入口、函数和 Notebook 单元见 [chapters.json](docs/chapters.json)，由 scripts/check_docs.py 检查。`Assembly.candidate` 等限定名同时核对方法所属的类。单元 ID 比编辑后易变的行号更适合定位。本地链接的目标须随仓库发布，仅在本机存在的忽略文件无法使检查通过。
 
 ## 上游依赖
 
