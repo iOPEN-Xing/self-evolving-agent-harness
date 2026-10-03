@@ -16,7 +16,7 @@
 
 ## 你会观察到什么
 
-1. 先用 `MemoryStore.add` 往 `MEMORY.md` 写入一条记忆，内容是"支付服务的缓存用 Redis 6.2"。
+1. 先用 `MemoryStore.add` 往 `MEMORY.md` 写入一条记忆，内容是“支付服务的缓存用 Redis 6.2，部署在 cache-01 上。”。
 2. 新一轮对话里指出这条记忆过时，模型通过 memory 的 replace 操作修订。固定版本支持单次与 `operations` 批量形状；只看顶层 action 会漏掉真实批量调用。
 3. 打印修订前后 `MEMORY.md` 的全文，能明确看到那一条从 6.2 变成 7.2，其它条目没动。
 
@@ -26,7 +26,7 @@
 {"target": "memory", "operations": [{"action": "replace", "old_text": "Redis 6.2", "content": "支付服务的缓存用 Redis 7.2，部署在 cache-01 上。"}]}
 ```
 
-## 为什么 replace 是"可追溯"的
+## replace 怎样定位并替换条目
 
 `tools/memory_tool.py` 里 `replace(target, old_text, new_content)` 的语义：
 
@@ -37,7 +37,7 @@
 
 唯一匹配限制了修改对象，但没有保证替换后的内容完整。工具回执告诉我们写入是否成功，回读与 diff 才能发现主机信息丢失等问题。正常完成、成功回执与正确文件变化必须同时满足。
 
-记忆条目用 `§`（section sign）分隔，所以 `MEMORY.md` 是一条一条可枚举的，这也是"可追溯"的物理基础。
+记忆条目用 `§`（section sign）分隔，便于枚举和定位。分隔符与唯一匹配不保存修改历史；可追溯审计还需要本轮请求、配对回执、前后版本和修改理由。
 
 ## 运行
 
@@ -48,6 +48,12 @@ bash examples/12-memory-revision/run.sh
 ## 范围与状态
 
 教学用独立 `HERMES_HOME=.hermes-home/<run_id>/`，不改真实 `~/.hermes`。脚本从环境变量读 key，不硬编码凭证。
+
+## 事实纠正也需要保持不变量
+
+更新条目包含两种内容：被纠正的版本号，以及仍然有效的主机信息。replace 的 content 是整条新值，因此最小的语言要求也可能产生较大的文件改动。这里的精确比较要求 after 等于 before 仅替换版本号的结果，主动保护未被授权修改的其余事实。
+
+本例把用户纠正作为输入依据，并未查询 Redis 验证升级。接入真实运维时应另记录现场来源、观察时间与适用主机，再控制并发修订。事实被保存、事实真实、后续任务正确召回，需要不同的验证。
 
 ## 在学习循环中的作用
 
