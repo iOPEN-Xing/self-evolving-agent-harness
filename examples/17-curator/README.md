@@ -1,4 +1,16 @@
-# 第 17 讲：Curator 技能库整理
+# 第 17 章：管理生命周期，整合重复方法
+
+[上一节](../16-skill-incremental-patch/README.md) · [下一节](../18-business-eval/README.md)
+
+## 问题与案例
+
+技能增多会增加常驻描述与选择困难。本章将确定性的生命周期转换和模型参与的整合分开，长期未用不等于低价值，归档也不是删除。第一组按 1、10、20 天未活动与 pinned 保护比较；第二组整合单笔付款方法，要求保留旧渠道“受理流水号映射渠道交易号”的特例。它重新构造材料，不是自动接续上一章候选。
+
+## 代码阅读路线
+
+[run_lab17.py](run_lab17.py) 的 `main` 调用真实 skill_manage 与 apply_automatic_transitions，无模型请求。[run_lab17_consolidate.py](run_lab17_consolidate.py) 的 `prepare_sandbox` 先探测写入边界，`worker` 调用原生 Curator，`skill_manage_operations` 和 `verify` 核对吸收、归档与可达资料；`minimal_decision` 只记录完整流程失败后的判断。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)：Python 3.12、deepseek-flash、官网直连。
 
 本目录分别核对生命周期转换和重复 Skill 整合。前者是确定性规则，后者会调用真实模型；两项分开运行、分开验收。
 
@@ -11,9 +23,9 @@ bash examples/17-curator/run.sh lifecycle
 bash examples/17-curator/run.sh consolidate
 ```
 
-整合练习使用 `GLM_API_KEY` 或 `BIGMODEL_API_KEY` 环境变量中的凭证，默认模型为 `glm-5.2`。脚本在请求模型前清除代理变量，不把凭证写入配置。生命周期练习不调用模型，不要求凭证。
+整合练习使用 `DEEPSEEK_API_KEY` 环境变量中的凭证，默认模型为 `deepseek-flash`。脚本在请求模型前清除代理变量，不把凭证写入配置。生命周期练习不调用模型，不要求凭证。
 
-默认使用 `.deps/hermes-agent/.venv/bin/python`，可通过 `HERMES_SRC` 指定依赖目录；整合练习可通过 `GLM_MODEL`、`GLM_BASE_URL` 调整模型连接。每次运行都创建独立且保留的 `HERMES_HOME`，不会复用上次 Skill 或使用状态。整合练习目前仅验证了 macOS 的 `sandbox-exec` 后端；Linux 等其他平台尚未提供经过验证的运行入口，脚本会退出，不会改为无写入限制的运行。
+默认使用 `.deps/hermes-agent/.venv/bin/python`，可通过 `HERMES_SRC` 指定依赖目录；整合练习可通过 `DEEPSEEK_MODEL`、`DEEPSEEK_BASE_URL` 调整模型连接。每次运行都创建独立且保留的 `HERMES_HOME`，不会复用上次 Skill 或使用状态。整合练习目前仅验证了 macOS 的 `sandbox-exec` 后端；Linux 等其他平台尚未提供经过验证的运行入口，脚本会退出，不会改为无写入限制的运行。
 
 ## 生命周期转换
 
@@ -66,3 +78,9 @@ bash examples/17-curator/run.sh consolidate
 实际使用时，核对当前版本与配置中的 `stale_after_days`、`archive_after_days`、启用与暂停状态、维护间隔和上次运行状态，再核对所用入口何时检查触发条件。7/14 天是练习设置，不是通用默认期限。长期未活动状态不等于低价值，固定保护与管理范围也参与转换判断。
 
 名称与描述会增加常驻输入，相近描述会增加选择困难；描述过长还可能截掉关键适用条件。具体 token 开销要按实际文本和模型测量，不提供未经计数的估算。
+
+## 工程应用与观察练习
+
+整合检查共同方法、例外条件、引用可达性与归档保留；关键词命中不能替代语义评测。生命周期与模型整理都需要作业编号、期限和暂停开关。显式调用不证明自动调度有效。macOS 写入 Sandbox 属于课程外层启动器，不能归为 Hermes 原生权限；终止主进程组也不证明另起组后代都结束。
+
+选出一项成功状态，沿来源、函数、调用和文件核对，说明它能证明哪一步。再为未验证状态列出需要补充的证据。

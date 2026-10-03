@@ -51,6 +51,7 @@ def main():
     if sys.version_info[:2] != (3, 12):
         raise SystemExit("工程验证统一使用 Python 3.12")
     validate_files()
+    subprocess.run([sys.executable, "scripts/check_docs.py"], cwd=ROOT, check=True)
     subprocess.run([sys.executable, "-m", "ruff", "check", "."], cwd=ROOT, check=True)
     subprocess.run([sys.executable, "-m", "pytest", "-q"], cwd=ROOT, check=True)
 

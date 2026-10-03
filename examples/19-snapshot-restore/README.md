@@ -1,8 +1,19 @@
-# 第19讲补充实验：快照恢复
+# 补充实验：方法回退与会话历史恢复
+
+[上一节](../19-enterprise-dataset/README.md) · [下一节](../23-final-assembly/README.md)
+
+## 问题与案例
+
+这是第 19 章旁的补充实验，不代替企业数据集。故意把“处置已受理”改成“服务已恢复”，用同一道 202 Accepted 题探测正确、退化和恢复。三次各自新建模型对话，文件恢复与行为恢复分别检查。Skill 回退应保留执行之后的审计流水；整库时间点恢复则是另一种语义。
+
+## 代码阅读路线
+
+[snapshot_restore.py](snapshot_restore.py) 建完整 Skill 副本与 SHA-256 清单，故意修改方法，核对后恢复全部清单文件并删去多余文件，再检查 SessionDB ID 与消息数未变。补充 export_all / import_sessions 只导入其支持字段到空库，已有 ID 跳过，活动字段重置，不能称为完整物理数据库恢复。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)
 
 本讲主练习为 [企业数据集](../19-enterprise-dataset/README.md)。下面保留恢复实验，不承担数据集转换与两引擎比较。
 
-# 第 19 讲练习：Skill 变更溯源与版本恢复
 
 Skill 每次改动都应留下可查询、可恢复的历史；当 L18 业务评测发现旧任务退化时，取回选定版本。SessionDB 会话历史备份只是补充实验。
 
@@ -12,13 +23,13 @@ Skill 每次改动都应留下可查询、可恢复的历史；当 L18 业务评
 
 ```bash
 unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
-export GLM_API_KEY='<在本机填写，不要写入文件或提交>'
+export DEEPSEEK_API_KEY='<在本机填写，不要写入文件或提交>'
 .deps/hermes-agent/.venv/bin/python examples/19-snapshot-restore/snapshot_restore.py
 ```
 
-也可以设置 `BIGMODEL_API_KEY`，脚本优先读取 `GLM_API_KEY`，这 2 个变量均未设置时退出。以上命令直接从仓库根目录执行。
+只从显式环境 DEEPSEEK_API_KEY 读取凭证。
 
-脚本在网络调用前主动清理 6 个代理环境变量，直连 `https://open.bigmodel.cn/api/paas/v4`。完整运行调用 3 次 `glm-5.2`，每次使用新的 `messages` 列表，参数为 `temperature=0, max_tokens=1024, extra_body={"reasoning_effort":"low"}`，不携带上一轮对话。
+脚本在网络调用前主动清理 6 个代理环境变量，直连 `https://api.deepseek.com`。完整运行调用 3 次 `deepseek-flash`，每次使用新的 `messages` 列表，参数为 `temperature=0, max_tokens=1024, extra_body={"thinking":{"type":"disabled"}}`，不携带上一轮对话。
 
 ## 主例流程（9 步）
 
@@ -54,7 +65,7 @@ export GLM_API_KEY='<在本机填写，不要写入文件或提交>'
 - SessionDB：断言恢复前后均为 2 个会话、4 条消息，Skill 回退未删会话记录。
 - 补充实验：空库导入 `imported=2, skipped=0`；重复导入 `imported=0, skipped=2`，运行时活动字段被重置为 NULL。
 
-保留原练习的 `reasoning_effort=low` 参数。历史运行中，v2 与默认长推理冲突时曾耗尽输出预算，正文只剩截断的 `VERD`；该现象尚未在当前 On-call 场景复现。重新运行后的原始回答见 `output/probe_v1_old.txt`、`probe_v2_broken.txt`、`probe_restored.txt`。
+当前 Chat 循环关闭 thinking；旧模型的输出预算现象不作为当前结果。
 
 ## 产物文件
 
@@ -73,3 +84,9 @@ export GLM_API_KEY='<在本机填写，不要写入文件或提交>'
 | `examples/19-snapshot-restore/output/sessiondb_backup.json` | 补充实验的会话历史导出 |
 
 终端还会打印主例和补充实验的临时目录。完整 Skill、含 references 的 v1 快照、快照内的 `manifest.json`、主例 `state.db` 及补充实验 `history.db` 位于这些独立临时目录，便于运行后检查。`output/` 中的正文副本用于查看；实际目录恢复使用临时目录里的完整 v1 快照。
+
+## 工程应用与观察练习
+
+本讲临时目录保留供核对，但 output 顶层可被下一次覆盖，因此应按终端本次目录与三份原始回答判断。缺标记或同时出现两个 VERDICT 时记无法判定，文件哈希一致不补足模型行为证据。生产恢复进一步需要一致性快照、版本协议、并发写入处理和审计保留。
+
+选一个用例，保存完整输入、版本、原始输出与评分。注入缺失回执或错对象的反例，说明它在哪一层被拒绝；若未拒绝，保留为待修复问题。

@@ -1,4 +1,16 @@
-# 第 18 讲：业务 Eval
+# 业务 Eval：让结构化字段与中文结论一起受检
+
+[上一节](../17-curator/README.md) · [下一节](../19-enterprise-dataset/README.md)
+
+## 问题与案例
+
+前面能创建和修订文件，还不能判断方法是否改善任务。本章从最小可重跑业务题开始：同一付款记录、两版指令、独立预期与同一个评分器。T02 应付 1500 元，成功 1000 元，另 500 元处理中；有效已付仍为 1000，差额 500，不能把待决金额计入。T04 两个商户共享订单号，联合键过滤后只能累计目标商户的成功流水。
+
+## 代码阅读路线
+
+[run_lab18.py](run_lab18.py) 的 `CASES` 给模型事实，`EXPECTED` 留给评分；`chinese_checks` 判断中文状态、已付与差额，`score` 组合结构、业务与格式检查，`main` 冻结输入、指令与评分版本并执行独立请求。[selftest.py](selftest.py) 的 `run` 注入正确同义表述、错金额、串户和中文反转。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)
 
 本练习直接比较 2 套指令，没有加载真实 Hermes Skill。它用于观察对照和评分方法；真实 Skill 的运行接入将在后续数据集练习中完成。
 
@@ -10,13 +22,13 @@
 python3 examples/18-business-eval/selftest.py
 ```
 
-设置 `GLM_API_KEY` 或 `BIGMODEL_API_KEY` 后，在仓库根目录运行：
+设置 `DEEPSEEK_API_KEY` 后，在仓库根目录运行：
 
 ```bash
 bash examples/18-business-eval/run.sh
 ```
 
-使用 `.deps/hermes-agent/.venv/bin/python` 的 OpenAI SDK（可设置 `HERMES_SRC`），默认 `glm-5.2`，可通过 `GLM_MODEL`、`GLM_BASE_URL` 修改连接。这里复用解释器，不启动 Hermes。每版 4 题，共 8 次独立请求，温度 0.1、每次最多 2000 输出 Token；输入、输出、推理 Token 的实际费用以供应商账单为准。启动评测前自动重跑评分器自测。
+使用 `.deps/hermes-agent/.venv/bin/python` 的 OpenAI SDK（可设置 `HERMES_SRC`），默认 `deepseek-flash`，可通过 `DEEPSEEK_MODEL`、`DEEPSEEK_BASE_URL` 修改连接。这里复用解释器，不启动 Hermes。每版 4 题，共 8 次独立请求，温度 0.1、每次最多 2000 输出 Token；输入、输出、推理 Token 的实际费用以供应商账单为准。启动评测前自动重跑评分器自测。
 
 ## 同一组付款记录
 
@@ -42,3 +54,9 @@ bash examples/18-business-eval/run.sh
 `output/run-*/` 保存指令全文、`dataset.json`、独立的 `expected.json`、评分器源码、逐题输入/原始回答/评分；`output/eval_report.json` 是最近一次摘要，带版本与 SHA-256。历史巡检报告属于旧场景，按 `dataset_version` 区分，不能与付款报告相减。
 
 退出 0 表示请求与评分完整完成，不表示两版均通过。请求失败返回非零并保留原始错误。修改评分规则后重新比较两版，不改答案凑通过率。
+
+## 工程应用与观察练习
+
+本轮 DeepSeek 真实运行：before 与 after 都为 4/4，不支持通过率提高的结论。保留双方输出，下一步需要新增不同业务条件与独立题，不能挑选一次较差基线再宣称改善。评分器的中文规则是保守匹配，超出表达范围应人工复核；它不是通用语言裁判。
+
+选一个用例，保存完整输入、版本、原始输出与评分。注入缺失回执或错对象的反例，说明它在哪一层被拒绝；若未拒绝，保留为待修复问题。

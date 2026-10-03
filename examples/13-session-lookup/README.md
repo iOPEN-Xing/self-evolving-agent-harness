@@ -1,19 +1,31 @@
-# Session 回查：叙述不等于执行结果
+# 第 13 章：从会话数据库找回调用与回执
 
-本练习用真实 Hermes `AIAgent` 和 GLM-5.2 完成 2 轮对话，把工具调用与回执写进 `state.db`，再关闭连接、重开数据库，通过 `session_search` 找回同一批记录。
+[上一节](../12-memory-revision/README.md) · [下一节](../14-external-memory-provider/README.md)
+
+## 问题与案例
+
+Memory 留下提炼事实，Session 留下执行依据。本章接着问：模型说“已记下”“已读过”，能否从持久化记录找回对应调用？案例先记住 Orion 使用 PostgreSQL、主库在东京，再读 Hermes README 前 20 行找第一个一级标题。数据库关闭重开后，按关键词定位并展开消息窗口，区分进程内记忆与真正持久化。
+
+## 代码阅读路线
+
+[run_session_lookup.py](run_session_lookup.py) 中 `paired_calls` 按 tool_call_id 配对，`discover_hit` 通过查询和本次时间筛选，`expand_forward` 跨小窗口展开去重，`main` 关闭重开 SessionDB 后比较消息。定位、展开、配对、持久化是不同检查，不按相邻位置猜归属。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)：Python 3.12、deepseek-flash、官网直连。
+
+本练习用真实 Hermes `AIAgent` 和 DeepSeek Flash 完成 2 轮对话，把工具调用与回执写进 `state.db`，再关闭连接、重开数据库，通过 `session_search` 找回同一批记录。
 
 模型说“已经记下”或“已经读过”，都需要回到工具回执核对；回执能证明本次工具观察到了什么，并不能替代系统当前状态。
 
 ## 运行
 
-在仓库根目录执行。先按根目录说明准备依赖，并在当前终端设置 `GLM_API_KEY`；也兼容 `BIGMODEL_API_KEY`。凭证只从环境变量读取。
+在仓库根目录执行。先按根目录说明准备依赖，并在当前终端设置 `DEEPSEEK_API_KEY`。凭证只从环境变量读取。
 
 ```bash
 bash scripts/setup_deps.sh
 bash examples/13-session-lookup/run.sh
 ```
 
-依赖获取和安装使用准备脚本配置的代理；本练习的 `run.sh` 会清除代理环境变量，直连智谱模型接口。
+依赖获取和安装使用准备脚本配置的代理；本练习的 `run.sh` 会清除代理环境变量，直连 DeepSeek 官网模型接口。
 
 ## 观察过程
 
@@ -41,3 +53,9 @@ bash examples/13-session-lookup/run.sh
 为观察窗口不足的情况，脚本使用 `window=2`。若返回值显示后面还有消息，就以当前窗口末条消息的编号继续展开，去重后再配对。完整请求与结果可能跨窗口，不能在第一个小窗口中直接宣布缺少回执。窗口轨迹保存在 `output/result.json` 的 `windows` 字段中。
 
 编号配对确认请求归属；“已受理”不等于完成，完成也不等于业务结果达到预期。没有搜到回执不能证明操作没有发生，还应检查会话、关键词、时间、展开范围和其他系统记录。Memory 保存提炼结果；Session 保存本 Harness 已记录的消息、请求及工具返回，不保证覆盖每次模型调用的全部输入或会话外动作。
+
+## 工程应用与观察练习
+
+回查服务应保留租户、时间、会话编号、消息编号与调用编号。小窗口缺少回执先继续展开；全文未搜到也不能证明外部动作从未发生。已受理还需业务状态验证。默认有效消息与 include_inactive 的全部已存记录要区分，避免回退或压缩后误读范围。
+
+选出一项成功状态，沿来源、函数、调用和文件核对，说明它能证明哪一步。再为未验证状态列出需要补充的证据。

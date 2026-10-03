@@ -1,75 +1,59 @@
-# 自进化 Agent 总装工程
+# 模块化 Assembly：按证据把真实组件接起来
 
-《自进化 Agent 工程实战》随课总装项目。它用真实组件搭出一个会持续工作、持续学习、并能跨实例共享改进的 Agent。所有环节都真实联网运行，不是模拟。
+前置：[第 23 章参考实现](../23-final-assembly/README.md) · 主实践：[原生支付 Capstone](../capstone/README.md)
 
-课程入口：https://time.geekbang.org/column/intro/101188801
+本目录提供可复用工程模块。在线前台使用原生 Hermes AIAgent，SkillClaw 管理会话共享和演化，课程外层负责候选目录、评测协议、采用策略和恢复。配置存在、组件可导入与整轮成功是不同状态；当前运行覆盖以 [验证报告](../../docs/DOCUMENTATION_VALIDATION.md) 为准。
 
-## 最终架构（六部分）
+## 1. 一笔付款怎样走过系统
 
-1. **在线前台 Agent Loop**：真实 Hermes `AIAgent` 接收任务、调用工具、给出结论。
-2. **持久化**：Memory（事实）、Skill（方法）、`state.db`（原始流水）。
-3. **后台学习**：轮末异步复盘，best-effort，不阻塞前台。
-4. **技能生命周期**：创建、增量修订、Curator 整合归档、快照恢复。
-5. **评测与版本**：业务评测、GEPA 离线优化，ADOPT / REJECT / RESTORE。
-6. **SkillClaw 跨实例共享**：多实例阅历上传、聚合演化、验证发布、第三实例加载。
+先按商户和订单查询教学流水，区分成功、处理中、渠道受理和商户处理。前台保存 Session，轮末原生后台可能提出可复用方法。方法先进入隔离候选，以相同数据、执行协议和独立 expected 比较基线与候选；只有满足策略才切换正式目录。接收实例拉取并核对本任务固定版本，回执证明实际使用。
 
-递归飞轮：更高质量的 Skill 服务任务，产生更高质量的 rollout，轮末复盘再升级 Skill。
+这个流程的每条边都有检查，后台产生文件并不直接授权采用。请求受理不表示到账，Skill 下载不表示已加载，文件恢复也不恢复外部付款。
 
-## 前置准备
+## 2. 代码阅读路线
 
-```bash
-# 在仓库根目录执行：拉取 Hermes / SkillClaw / OpenViking，建立 Hermes venv
-bash scripts/setup_deps.sh
-
-# 配置智谱 API 密钥（也可写入 ~/.hermes/.env）
-export GLM_API_KEY="你的智谱开放平台密钥"
-```
-
-## 目录结构
-
-```text
-examples/assembly/
-  run_assembly.py              # 总编排入口（按场景驱动真实组件）
-  assembly/
-    config.py                  # 统一配置：路径、模型、密钥（只从环境变量）
-    contracts.py               # 共享数据契约（任务/评测/决策/共享）
-    runtime/                   # 真实 Hermes 前台 + 原生异步后台
-    skillclaw/                 # 真实 SkillClaw evolve_server 接入
-    lifecycle/                 # 技能创建/Curator/快照
-    eval/                      # 业务评测、评分器自检、采用决策
-  scenarios/                   # 支付场景任务定义
-  output/                      # 实跑证据（大文件/二进制不入库）
-```
-
-## 运行
-
-```bash
-# 冒烟：前台跑一个任务，观察后台复盘不阻塞
-python run_assembly.py smoke
-
-# 支付场景：同一正式目录连续处理多任务，触发技能创建/修订/评测
-python run_assembly.py scenarios
-
-# 跨实例共享：A/B 上传阅历，SkillClaw 演化发布，第三实例加载
-python run_assembly.py shared
-
-# 完整：六部分按场景依次运行并汇总证据
-python run_assembly.py all
-```
-
-## 验收标准（证据写入 `output/`）
-
-| 部分 | 证据 | 通过标准 |
+| 路径 | 职责 | 关键边界 |
 |---|---|---|
-| 前台 | `task_runs.json` | 真实工具调用与回执，给出业务结论 |
-| 后台 | `background_reviews.json` | `blocked_foreground=false`；后台延迟/失败时下一前台任务照常 |
-| 持久化 | `state.db`、Memory/Skill 目录 | 流水、事实、方法各自落盘 |
-| 生命周期 | `candidates/`、`snapshots/` | 候选与正式目录隔离；快照可恢复 |
-| 评测与版本 | `eval_reports.json`、`decisions.json` | 评分器自检通过才 ADOPT；REJECT/RESTORE 语义分清 |
-| 共享 | `shared_revisions.json` | 发布经第三方验证；第三实例加载并在下一轮真实消费 |
+| [run_assembly.py](run_assembly.py) | 编排阶段与续跑记录 | 失败尝试保留，不按分数补跑 |
+| [assembly/config.py](assembly/config.py) | 路径、DeepSeek、服务地址与环境凭证 | 不隐式加载个人密钥文件 |
+| [assembly/contracts.py](assembly/contracts.py) | 任务、评测、候选和哈希契约 | 字段与真实文件对应 |
+| [assembly/runtime/foreground.py](assembly/runtime/foreground.py) | 注册支付工具并创建原生 Agent | 只读教学数据，独立实例 home |
+| [assembly/runtime/background.py](assembly/runtime/background.py) | 观察原生后台与前台关系 | 线程终止、工具成功、文件变化分开 |
+| [assembly/lifecycle/skills.py](assembly/lifecycle/skills.py) | 候选、Curator、方法包快照 | 候选与正式目录隔离，失败保留证据 |
+| [assembly/eval/runner.py](assembly/eval/runner.py) | 独立客户端的真实模型评测 | 冻结 Skill 全树、输入和协议 |
+| [assembly/eval/judge.py](assembly/eval/judge.py) | 确定性付款评分 | 中文与结构字段一致，反例自检 |
+| [assembly/skillclaw/client.py](assembly/skillclaw/client.py) | 原生共享、上传与发布接入 | 生成候选、验证发布、加载分别记录 |
+| [assembly/skillclaw/validation.py](assembly/skillclaw/validation.py) | 独立进程回放与截止 | chat / PRM 预算、错误和重试不伪装通过 |
+| [assembly/gepa.py](assembly/gepa.py) | 另一个自建离线教学模块 | 官方 GEPA 主课程在第 20 章 |
+| [scenarios/orders.json](scenarios/orders.json) | 支付快照 | 构造数据，未连接支付系统 |
 
-## 边界与纪律
+run_assembly 的 worker 在新进程先设 HERMES_HOME，再导入 Hermes，避免缓存全局路径串入其他实例。已加载正文与哈希另外记录，不能只根据磁盘目录宣布模型已采用方法。
 
-- 密钥只从环境变量读取，不写入代码、日志或证据文件。
-- `.deps/` 是上游依赖，不纳入本仓库；如需固定版本见 `scripts/setup_deps.sh`。
-- `output/` 中的二进制与数据库不入库，只保留可阅读的文本证据；读者重跑即可得到最新输出。
+## 3. 运行与依赖
+
+先完成 [统一环境准备](../../docs/MODEL_SETUP.md) 与模型探针，在仓库根目录运行：
+
+```bash
+.deps/hermes-agent/.venv/bin/python -B examples/assembly/run_assembly.py smoke
+.deps/hermes-agent/.venv/bin/python -B examples/assembly/run_assembly.py all
+```
+
+smoke 只观察一段原生前后台关系；all 执行编排中全部阶段。--run-id 继续指定运行，仍需遵守入口对阶段和失败尝试的检查。各独立演示入口 run_runtime_demo.py、run_lifecycle_demo.py、run_eval_demo.py、run_skillclaw_demo.py 用于拆开观察，不把其结果拼成一次全流程成功。
+
+模型为 deepseek-flash / 官网地址。候选验证进程明确读取 DEEPSEEK_API_KEY，凭证不写入报告；命令无需 source 个人 .env。真实调用产生的用量以原始响应和供应商账单核对，阶段任务次数不等于 HTTP 请求次数。
+
+## 4. 证据应怎样连接
+
+先读本轮计划和运行状态，再按任务编号找 Session、工具回执与候选来源。评测报告需要完整 case 集、Skill 全树哈希、模型与执行参数、评分器版本和逐题原始输出。采用决定引用同一份冻结证据；共享端再给出发布版本、下载哈希、本任务固定哈希与实际读取回执。
+
+快照恢复先在同级临时目录核对完整文件集合与哈希，再切换目录；失败保留原目录及可恢复备份。Curator 使用受控写入沙箱。POSIX 进程组取消用于作业时限，不能代替读写隔离或分布式事务。
+
+## 5. 落地顺序
+
+第一步只接一项读取工具，固定对象、时间窗口和输出协议；第二步建立现有方法、独立 expected 和已知错误样本；第三步影子执行学习端，所有产物先是候选；第四步冻结评测并分权发布；第五步检验接收端加载、降级缓存、失败补偿与恢复。
+
+本机 local SkillHub 演练没有证明跨主机一致性、租户鉴权或发布事务。未验证的 Curator、GEPA、Memory 使用和跨实例再学习能力不能因模块存在而标记通过。
+
+## 观察练习
+
+把候选中的支持文件也纳入哈希，再尝试只更新 SKILL.md 不更新 reference，检查评测与发布能否发现方法包不一致。模拟下载完成但任务仍用旧目录，比较共享哈希和任务哈希；若只看版本号，这个错误会被漏掉。

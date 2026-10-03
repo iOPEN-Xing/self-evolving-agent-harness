@@ -1,10 +1,22 @@
-# 企业数据集：怎样把真实经历变成可重跑的评测题？
+# 企业数据集：把经历转为可重跑的题
+
+[上一节](../18-business-eval/README.md) · [下一节](../20-gepa-offline-optimization/README.md)
+
+## 问题与案例
+
+第 18 章在脚本里放题，本章进一步从请求与业务快照转换 YAML。关键不是多收历史日志，而是明确哪些字段可交给 Agent、哪些是独立答案、哪些历史反馈仅作来源。payment-002 的受理未终结与 payment-004 的跨商户同号分别检验状态与对象边界；旧 accepted=1 不能当作新版答对的评分。
+
+## 代码阅读路线
+
+[scripts/convert.py](scripts/convert.py) 形成题目与 rejected.jsonl；[scripts/run_suite.py](scripts/run_suite.py) 建本轮配置、执行自测与原生 validate / run；[scripts/hermes_worker.py](scripts/hermes_worker.py) 用真实 Hermes 预载方法和只读快照；[scripts/grader.py](scripts/grader.py) 独立评分；[scripts/analyze.py](scripts/analyze.py) 按编号配对，而非按报告位置对齐。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)
 
 主练习整理教学导出、检查排除原因、生成原生 YAML，校验后使用原手写服务与真实 Hermes 两个自定义执行引擎，再按用例编号配对。快照恢复另见 `../19-snapshot-restore/`，是补充实验。
 
 ## 准备
 
-使用 Python 3.11、Go 1.25+ 和 macOS `sandbox-exec`。`dependencies.json` 固定 Skill Up 与 Hermes 提交；Go 依赖由固定提交的 go.mod/go.sum 锁定。补丁只使评分临时目录遵循 TMPDIR。Hermes 所选解释器须已装上游依赖。
+当前入口使用 Python 3.12（dependencies.json 中 3.11 为历史观察元数据）、Go 1.25+ 和 macOS `sandbox-exec`。`dependencies.json` 固定 Skill Up 与 Hermes 提交；Go 依赖由固定提交的 go.mod/go.sum 锁定。补丁只使评分临时目录遵循 TMPDIR。Hermes 所选解释器须已装上游依赖。
 
 在仓库根目录执行：
 
@@ -21,9 +33,10 @@ cat examples/19-enterprise-dataset/rejected.jsonl
 
 ## 执行与隔离
 
-显式设置 `GLM_API_KEY`、`GLM_BASE_URL`，每轮使用新目录：
+显式设置 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`，每轮使用新目录：
 
 ```bash
+export DEEPSEEK_BASE_URL=https://api.deepseek.com
 export LECTURE19_OUTPUT_DIR="$PWD/examples/19-enterprise-dataset/output/my-new-run"
 "$PYTHON" examples/19-enterprise-dataset/scripts/run_suite.py
 "$PYTHON" examples/19-enterprise-dataset/scripts/analyze.py
@@ -42,3 +55,9 @@ Hermes 使用原生预载入口；适配器读取四张快照，模型工具集�
 `protocol.json` 保存事先约定和版本哈希；已有该文件时拒绝覆盖。原生报告在 `skill-up/`，执行状态在 `native-run-status.json`，逐题输出、缺失结果和判断依据见 `paired-differences.json/.md`。`gateway_demo.py` 是本地稳定分组与反馈关联补充演示；分析按用例编号独立配对；如有本轮网关记录，再附接线检查。
 
 观察题：为一道题保存输入快照、独立预期、Skill/服务/评分器版本、两版输出与判断依据，并沿 request_id 找回来源。指出答案、旧报告、历史采纳和截止后记录中哪些不能交给 Agent，并说明用途。思考题：为什么按旧采纳值评分，会使新版答错也保持同一个80%？完整答案另行发放。
+
+## 工程应用与观察练习
+
+数据集工程至少固定 request_id、事件时间、截止时间、来源、输入哈希、独立预期与排除原因。相同事件的不同文本不当作独立样本。OS 限制读取评分材料，不把“另存 grader-only 目录”当作隔离。原生 worker 使用 provider=custom 的 OpenAI 兼容路由，模型与官网地址仍为 DeepSeek。本章的 Python 3.11 是历史运行元数据，当前课程准备入口统一 3.12，当前平台覆盖见验证报告。
+
+选一个用例，保存完整输入、版本、原始输出与评分。注入缺失回执或错对象的反例，说明它在哪一层被拒绝；若未拒绝，保留为待修复问题。

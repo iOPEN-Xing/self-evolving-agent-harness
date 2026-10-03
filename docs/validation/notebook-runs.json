@@ -1,0 +1,97 @@
+{
+  "source": "real_official_api_execution",
+  "python": "3.12.14",
+  "sdk": "0.154.0",
+  "rows": [
+    {
+      "chapter": "01-agent-loop",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 11.455,
+      "notebook_source_sha256": "e6a591ca928f4ddda5948308da301c23565242f60d0a3acfea439ee4db682837",
+      "execution_artifact_sha256": "4f5bf52d1df8f4735c0cb1879e3b5364b1918de0318b7321c78ea0b43061c5d0",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "02-instruction-control",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 49.699,
+      "notebook_source_sha256": "0c4863d7276c95b6e6f9b66320e392606611d34ffa665963f4e86c9556bc2e59",
+      "execution_artifact_sha256": "64fe28d1b1fb69f55730dda1957d29d40679e197966a56dbfe7ba558b630879b",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "03-context-engine",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 16.651,
+      "notebook_source_sha256": "2681b7ded3858f5c5c251fe1761dc5c5d78c34dca6047ff6e619f8f995d6d3c1",
+      "execution_artifact_sha256": "1ff6bca12da54f829e3911a0389a7076242eb0ec0c7d9c53716980583d04122b",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "04-agents-md",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 15.738,
+      "notebook_source_sha256": "ba74e62ce03ada92cf13bfd526d5c6c2d4032bbb6f27a1055692577c3b584c7c",
+      "execution_artifact_sha256": "755941c4b91997817b55c60d5a13d0563df1eb75e77a0dc67dc66d77c02d14d4",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "05-context-compression",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 27.934,
+      "notebook_source_sha256": "82a781e6a83259d2aef8e89c0c9ddcaa0caad0e2f417f9f2ea55bf99eb96f0d2",
+      "execution_artifact_sha256": "dbebfbd1c4a954e1c5d15662253caf8318ca52dee75d7a11a793ea87a1267416",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "06-thread-fork",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 6.353,
+      "notebook_source_sha256": "66c665cc5ee6c1da6ad807524da24329f8f2dca3fa9c5922ce09061e71784ac1",
+      "execution_artifact_sha256": "effba1c6d005ea017cedae51274d7037d21bcefcab3b7fefbf45aca41eb02976",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "07-skill-extraction",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 20.974,
+      "notebook_source_sha256": "5513c65a36d9cac36af65379f43f99f3e7420f1edd9940ba3d8e3697a70e0260",
+      "execution_artifact_sha256": "b0cc6c8ab69232c7ef6ed46006ee673209bde79d1490e77808779981326b4468",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "08-progressive-disclosure",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 10.396,
+      "notebook_source_sha256": "b25a4755e679ee5bf6f16cec3cf55e2d588761954c9120038b75c4f946b47d88",
+      "execution_artifact_sha256": "3bb8e84a4789a25dfe98d9b6a1bd00d2568ce6b965cbca695ec8e065e7d27f7e",
+      "optional_extensions_executed": false
+    },
+    {
+      "chapter": "09-isolation-approval",
+      "source": "real_official_deepseek",
+      "requested_model": "deepseek-flash",
+      "passed": true,
+      "elapsed_seconds": 17.122,
+      "notebook_source_sha256": "003bd14248d19d6453908b1b41f4bc44e40fff5b1e6579429eeba0ee5a4a55ec",
+      "execution_artifact_sha256": "a33a3daa9760f43a5b76c9f7c58509a3b4a04d012a47b0c48f8c79a52104ecb7",
+      "optional_extensions_executed": false
+    }
+  ]
+}

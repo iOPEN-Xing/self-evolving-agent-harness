@@ -1,0 +1,18 @@
+{
+  "model": "deepseek-flash",
+  "base_url": "https://api.deepseek.com",
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "checks": {
+    "turn_completed": true,
+    "replace_receipt_succeeded": true,
+    "exact_revision": true
+  },
+  "before": "支付服务的缓存用 Redis 6.2，部署在 cache-01 上。",
+  "after": "支付服务的缓存用 Redis 7.2，部署在 cache-01 上。",
+  "source": "real_official_api_execution",
+  "original_report_sha256": "3750a68d18c30c9865d1edb0859b198f0e48e24e418c6a9a8812ca7b60b07e92",
+  "source_hashes": {
+    "examples/12-memory-revision/run_memory_revision.py": "3f469349890347bd38a21d3fae38cc9c99b3e61d28d4699dc11c374e0c8f9cf8",
+    "examples/12-memory-revision/revision_validation.py": "d470267bbfbd7a883ce318e42c33e132343f08879e33d04f229864bdeeebd28b"
+  }
+}

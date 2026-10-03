@@ -1,9 +1,21 @@
-# 第22讲：在线分布式部署
+# 跨实例共享：验证下载、加载与实际执行
+
+[上一节](../21-skillclaw-session-collection/README.md) · [下一节](../23-final-assembly/README.md)
+
+## 问题与案例
+
+采集后的方法如何被接收端使用？本章用同一带反馈来源分别观察 direct 和 validated 管线，再对照旧版、下载新版但仍加载旧版、实际加载新版三种情况。新分支来自健康与上游检查未定位后的连接池核查；新增上游确实异常的反分支，防止把 pool 变成每次必查。
+
+## 代码阅读路线
+
+[run22.py](run22.py) 使用第 21 章的原生 worker、代理和 EvolveServer。共享内容哈希、任务固定哈希与 skill_view 回执分别存入 task-version.json。回退以旧内容发布新的递增版本，再新建实例拉取并重跑 pool-probe；[shared_revision.py](shared_revision.py) 是另一个自建循环示例，不能混作原生路径。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)
 
 主入口是原生实现 `run22.py`，通过 Hermes 原生 `skill_view` 读取方法并执行工具；旧 `shared_revision.py` 是另一接入示例，把下载的 Skill 正文加入模型输入，不是独立 Hermes 或原生 skill_view。
 
 ```bash
-export GLM_API_KEY=...
+# 先按 MODEL_SETUP 在当前终端设置 DEEPSEEK_API_KEY
 .deps/hermes-agent/.venv/bin/python -B examples/22-skillclaw-shared-revision/run22.py
 ```
 
@@ -20,3 +32,9 @@ export GLM_API_KEY=...
 企业接入约定：每次任务启动时拉取已采用版，核对完整方法文件后固定本次任务使用的内容哈希。正在运行的任务继续使用启动时版本；拉取失败时使用本机最后一次核验通过版并记录降级原因，新版从下一次任务生效。上述缓存降级和跨主机条件是部署约定，当前演示未验收故障与生产接入。
 
 观察题：先确认 direct 或 validated 身份，分别核对下载、skill_view 与实际调用。比较反分支，再核对回退后新实例的版本和旧版哈希；解释错误单独记，正常完成不等于业务通过。
+
+## 工程应用与观察练习
+
+发布成功、文件下载、Skill 被读入、正确执行是四个状态。direct 用于观察发布语义，不表示经过业务验收；validated 未启动验证工作程序时仍保留正式旧版。本机多进程 local 后端不证明跨主机一致性。生产应任务开始固定版本，失败使用最后核验通过缓存并记录降级；这一降级约定尚未在示例验收。
+
+选一个用例，保存完整输入、版本、原始输出与评分。注入缺失回执或错对象的反例，说明它在哪一层被拒绝；若未拒绝，保留为待修复问题。

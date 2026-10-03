@@ -1,0 +1,401 @@
+{
+  "schema_version": 1,
+  "chapters": [
+    {
+      "id": "01-agent-loop",
+      "document": "examples/01-agent-loop/README.md",
+      "entrypoints": [
+        "examples/01-agent-loop/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab01-reader-03",
+        "lab01-reader-05",
+        "lab01-reader-07",
+        "lab01-reader-09",
+        "lab01-reader-11"
+      ]
+    },
+    {
+      "id": "02-instruction-control",
+      "document": "examples/02-instruction-control/README.md",
+      "entrypoints": [
+        "examples/02-instruction-control/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab02-reader-03",
+        "lab02-reader-07",
+        "lab02-reader-09",
+        "lab02-reader-11",
+        "lab02-reader-13"
+      ]
+    },
+    {
+      "id": "03-context-engine",
+      "document": "examples/03-context-engine/README.md",
+      "entrypoints": [
+        "examples/03-context-engine/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab03-reader-05",
+        "lab03-reader-07",
+        "lab03-reader-09"
+      ]
+    },
+    {
+      "id": "04-agents-md",
+      "document": "examples/04-agents-md/README.md",
+      "entrypoints": [
+        "examples/04-agents-md/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab04-reader-03",
+        "lab04-reader-05",
+        "lab04-reader-07",
+        "lab04-reader-09"
+      ]
+    },
+    {
+      "id": "05-context-compression",
+      "document": "examples/05-context-compression/README.md",
+      "entrypoints": [
+        "examples/05-context-compression/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab05-reader-03",
+        "lab05-reader-05",
+        "lab05-reader-07",
+        "lab05-reader-09"
+      ]
+    },
+    {
+      "id": "06-thread-fork",
+      "document": "examples/06-thread-fork/README.md",
+      "entrypoints": [
+        "examples/06-thread-fork/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab06-reader-03",
+        "lab06-reader-05",
+        "lab06-reader-07",
+        "lab06-reader-09"
+      ]
+    },
+    {
+      "id": "07-skill-extraction",
+      "document": "examples/07-skill-extraction/README.md",
+      "entrypoints": [
+        "examples/07-skill-extraction/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab07-reader-05",
+        "lab07-reader-07",
+        "lab07-reader-09",
+        "lab07-creator-init-code"
+      ]
+    },
+    {
+      "id": "08-progressive-disclosure",
+      "document": "examples/08-progressive-disclosure/README.md",
+      "entrypoints": [
+        "examples/08-progressive-disclosure/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab08-reader-03",
+        "lab08-reader-05",
+        "lab08-reader-07",
+        "lab08-reader-09",
+        "lab08-reader-11"
+      ]
+    },
+    {
+      "id": "09-isolation-approval",
+      "document": "examples/09-isolation-approval/README.md",
+      "entrypoints": [
+        "examples/09-isolation-approval/workshop.ipynb"
+      ],
+      "symbols": {},
+      "notebook_cells": [
+        "lab09-reader-03",
+        "lab09-reader-05",
+        "lab09-reader-07",
+        "lab09-reader-09"
+      ]
+    },
+    {
+      "id": "11-background-review",
+      "document": "examples/11-background-review/README.md",
+      "entrypoints": [
+        "examples/11-background-review/run_background_review.py"
+      ],
+      "symbols": {
+        "examples/11-background-review/run_background_review.py": [
+          "main",
+          "make_recorder",
+          "review_tool_results",
+          "snapshot_memory"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "12-memory-revision",
+      "document": "examples/12-memory-revision/README.md",
+      "entrypoints": [
+        "examples/12-memory-revision/revision_validation.py",
+        "examples/12-memory-revision/run_memory_revision.py"
+      ],
+      "symbols": {
+        "examples/12-memory-revision/run_memory_revision.py": [
+          "list_memory_operations",
+          "main"
+        ],
+        "examples/12-memory-revision/revision_validation.py": [
+          "revision_checks"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "13-session-lookup",
+      "document": "examples/13-session-lookup/README.md",
+      "entrypoints": [
+        "examples/13-session-lookup/run_session_lookup.py"
+      ],
+      "symbols": {
+        "examples/13-session-lookup/run_session_lookup.py": [
+          "discover_hit",
+          "expand_forward",
+          "main",
+          "paired_calls"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "14-external-memory-provider",
+      "document": "examples/14-external-memory-provider/README.md",
+      "entrypoints": [
+        "examples/14-external-memory-provider/run_provider.py",
+        "examples/14-external-memory-provider/run_shared_sqlite.py"
+      ],
+      "symbols": {
+        "examples/14-external-memory-provider/run_provider.py": [
+          "FileBackedMemory",
+          "initialize",
+          "main",
+          "name",
+          "prefetch",
+          "sync_turn"
+        ],
+        "examples/14-external-memory-provider/run_shared_sqlite.py": [
+          "Client",
+          "SharedSQLiteMemory",
+          "initialize",
+          "main",
+          "name",
+          "prefetch",
+          "sync_turn"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "15-skill-autocreation",
+      "document": "examples/15-skill-autocreation/README.md",
+      "entrypoints": [
+        "examples/15-skill-autocreation/run_lab15.py"
+      ],
+      "symbols": {
+        "examples/15-skill-autocreation/run_lab15.py": [
+          "frontmatter",
+          "main",
+          "parse_decision",
+          "record_subset"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "16-skill-incremental-patch",
+      "document": "examples/16-skill-incremental-patch/README.md",
+      "entrypoints": [
+        "examples/16-skill-incremental-patch/run_lab16.py"
+      ],
+      "symbols": {
+        "examples/16-skill-incremental-patch/run_lab16.py": [
+          "check_coverage",
+          "frontmatter",
+          "main",
+          "prepare_operations"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "17-curator",
+      "document": "examples/17-curator/README.md",
+      "entrypoints": [
+        "examples/17-curator/run_lab17.py",
+        "examples/17-curator/run_lab17_consolidate.py"
+      ],
+      "symbols": {
+        "examples/17-curator/run_lab17.py": [
+          "main"
+        ],
+        "examples/17-curator/run_lab17_consolidate.py": [
+          "main",
+          "minimal_decision",
+          "prepare_sandbox",
+          "skill_manage_operations",
+          "verify",
+          "worker"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "18-business-eval",
+      "document": "examples/18-business-eval/README.md",
+      "entrypoints": [
+        "examples/18-business-eval/run_lab18.py",
+        "examples/18-business-eval/selftest.py"
+      ],
+      "symbols": {
+        "examples/18-business-eval/run_lab18.py": [
+          "chinese_checks",
+          "main",
+          "score"
+        ],
+        "examples/18-business-eval/selftest.py": [
+          "run"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "19-enterprise-dataset",
+      "document": "examples/19-enterprise-dataset/README.md",
+      "entrypoints": [
+        "examples/19-enterprise-dataset/scripts/analyze.py",
+        "examples/19-enterprise-dataset/scripts/convert.py",
+        "examples/19-enterprise-dataset/scripts/grader.py",
+        "examples/19-enterprise-dataset/scripts/hermes_worker.py",
+        "examples/19-enterprise-dataset/scripts/run_suite.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "19-snapshot-restore",
+      "document": "examples/19-snapshot-restore/README.md",
+      "entrypoints": [
+        "examples/19-snapshot-restore/snapshot_restore.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "20-gepa-offline-optimization",
+      "document": "examples/20-gepa-offline-optimization/README.md",
+      "entrypoints": [
+        "examples/20-gepa-offline-optimization/gepa_offline.py",
+        "examples/20-gepa-offline-optimization/hermes_worker.py",
+        "examples/20-gepa-offline-optimization/run_exercise.py"
+      ],
+      "symbols": {
+        "examples/20-gepa-offline-optimization/run_exercise.py": [
+          "Adapter",
+          "adoption",
+          "reflection_lm",
+          "static_check"
+        ],
+        "examples/20-gepa-offline-optimization/hermes_worker.py": [
+          "query_payment"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "21-skillclaw-session-collection",
+      "document": "examples/21-skillclaw-session-collection/README.md",
+      "entrypoints": [
+        "examples/21-skillclaw-session-collection/audit21.py",
+        "examples/21-skillclaw-session-collection/candidate_evidence.py",
+        "examples/21-skillclaw-session-collection/evolve_once.py",
+        "examples/21-skillclaw-session-collection/learning_worker.py",
+        "examples/21-skillclaw-session-collection/run21.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "22-skillclaw-shared-revision",
+      "document": "examples/22-skillclaw-shared-revision/README.md",
+      "entrypoints": [
+        "examples/22-skillclaw-shared-revision/run22.py",
+        "examples/22-skillclaw-shared-revision/shared_revision.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "23-final-assembly",
+      "document": "examples/23-final-assembly/README.md",
+      "entrypoints": [
+        "examples/23-final-assembly/final_assembly.py",
+        "examples/23-final-assembly/shift/runtime.py",
+        "examples/23-final-assembly/versioning/policy.py",
+        "examples/23-final-assembly/versioning/snapshot.py"
+      ],
+      "symbols": {
+        "examples/23-final-assembly/final_assembly.py": [
+          "ToolLoopAgent"
+        ]
+      },
+      "notebook_cells": []
+    },
+    {
+      "id": "assembly",
+      "document": "examples/assembly/README.md",
+      "entrypoints": [
+        "examples/assembly/assembly/config.py",
+        "examples/assembly/assembly/contracts.py",
+        "examples/assembly/assembly/eval/judge.py",
+        "examples/assembly/assembly/eval/runner.py",
+        "examples/assembly/assembly/gepa.py",
+        "examples/assembly/assembly/lifecycle/skills.py",
+        "examples/assembly/assembly/runtime/background.py",
+        "examples/assembly/assembly/runtime/foreground.py",
+        "examples/assembly/assembly/skillclaw/client.py",
+        "examples/assembly/assembly/skillclaw/validation.py",
+        "examples/assembly/run_assembly.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "capstone",
+      "document": "examples/capstone/README.md",
+      "entrypoints": [
+        "examples/capstone/run_assembly_light.py"
+      ],
+      "symbols": {},
+      "notebook_cells": []
+    },
+    {
+      "id": "10-learning-loop",
+      "document": "docs/10-learning-loop.md",
+      "entrypoints": [],
+      "symbols": {},
+      "notebook_cells": []
+    }
+  ]
+}

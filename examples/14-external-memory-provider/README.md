@@ -1,6 +1,18 @@
-# 第 14 讲：外部记忆 Provider（生命周期 / 边界 / 漏账）
+# 第 14 章：将 Memory 接到可换后端，再检验共享
 
-本目录是《自进化 Agent 实战》第 14 讲的随讲实验。用真实 Hermes `AIAgent` + glm-5.2，自己写一个 `MemoryProvider` 子类（文件后端），注册进 `MemoryManager`，看清它的生命周期、和内置 `MEMORY.md` 的边界、故障隔离，以及写操作失败时的漏账。
+[上一节](../13-session-lookup/README.md) · [下一节](../15-skill-autocreation/README.md)
+
+## 问题与案例
+
+内置文件够用时无需外置；需要跨进程共享、命名空间或权限时，Provider 将召回和同步从主流程分离。文件实验保存 wiki.internal/api，新 Agent 不继承旧对话，靠 initialize / prefetch 召回；故障轮 sync_turn 抛错，前台正常而文件未更新。补充 SQLite 实验让 A 写、B 不重启召回，再让 B 写反馈、A 读到，检查双向共享与来源。
+
+## 代码阅读路线
+
+[run_provider.py](run_provider.py) 的 `FileBackedMemory` 实现文件后端与完成事件，`main` 观察初始化、召回、同步和故障。[run_shared_sqlite.py](run_shared_sqlite.py) 的 `SharedSQLiteMemory` 每次召回新建连接查询共享库，`Client` 管理独立本地 SessionDB / Agent。上游契约在 agent/memory_provider.py 与 agent/memory_manager.py。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)：Python 3.12、deepseek-flash、官网直连。
+
+本目录是《自进化 Agent 实战》第 14 讲的随讲实验。用真实 Hermes `AIAgent` + deepseek-flash，自己写一个 `MemoryProvider` 子类（文件后端），注册进 `MemoryManager`，看清它的生命周期、和内置 `MEMORY.md` 的边界、故障隔离，以及写操作失败时的漏账。
 
 ## 你会观察到什么
 
@@ -21,7 +33,7 @@
 ## 运行
 
 ```bash
-GLM_API_KEY=你的智谱key bash run.sh
+bash examples/14-external-memory-provider/run.sh
 ```
 
 脚本会自动核对以下结果，任一项不满足便以非零状态退出：
@@ -45,7 +57,7 @@ GLM_API_KEY=你的智谱key bash run.sh
 
 每次 `run.sh` 都在 `output/run-XXXXXXXX/` 下创建独立且保留的 `hermes-home/`，不改真实 `~/.hermes`。`output/latest-run.txt` 记录本次运行目录，其中保存 `run.log`、`run-summary.json` 和外部记忆文件。输出目录不加入版本管理。
 
-脚本只从 `GLM_API_KEY` 或 `BIGMODEL_API_KEY` 读取凭证，运行前清除大小写代理变量。可用 `HERMES_SRC` 指定依赖目录，默认使用仓库内的 `.deps/hermes-agent`；使用该目录的 `.venv/bin/python`。
+脚本只从 `DEEPSEEK_API_KEY` 读取凭证，运行前清除大小写代理变量。可用 `HERMES_SRC` 指定依赖目录，默认使用仓库内的 `.deps/hermes-agent`；使用该目录的 `.venv/bin/python`。
 
 为单独观察外部 provider，模型轮次不开放工具。内置 `MEMORY.md` 预先写入一条无关约定，脚本在每轮后逐字比较它与原文件；这证明本次外部 provider 没有改写内置文件，不表示所有启用内置记忆工具的对话都不会修改该文件。召回轮重建 agent 且不传旧对话历史，用来排除模型从旧对话中取得地址的可能。
 
@@ -66,3 +78,9 @@ GLM_API_KEY=你的智谱key bash run.sh
 `--with-model` 使用两个真实 `AIAgent`，各自使用独立本地目录和数据库，仍通过同一个自建 SQLite Provider 读写。这一模式需要单独运行验证；默认存储检查通过不证明模型路径或业务结果通过。
 
 案例是构造的教学数据，`business_effect_verified`、`joint_evolution_verified` 均保持 `false`。这不实现 OpenViking 的经验提炼或分层检索，也不实现生产鉴权。共享地址只是起点；身份、命名空间、权限和检索范围需要由后端明确配置。读到 A 的案例后，还需核查来源、适用条件、当前验证、反馈写回与后续正确采用。
+
+## 工程应用与观察练习
+
+共享后端明确身份、租户、范围、权限与来源；写入以事务提交和完成事件验证。SQLite BEGIN IMMEDIATE 处理本练习事务竞争，不等于跨地域高可用。召回旧事实仍要检查更新时间与现场状态。本例未实现 OpenViking 的分层检索，构造反馈读回也不证明业务收益或共同进化。
+
+选出一项成功状态，沿来源、函数、调用和文件核对，说明它能证明哪一步。再为未验证状态列出需要补充的证据。

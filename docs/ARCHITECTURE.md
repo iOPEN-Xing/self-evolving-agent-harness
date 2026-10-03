@@ -10,7 +10,7 @@
 | 11–16 | 各讲 Python 脚本 | Hermes 原生复盘、Memory、Session 与 Skill 学习 | 依赖 `.deps/hermes-agent`；独立练习不等于统一运行服务 |
 | 17–20 | Curator、业务 Eval、企业题库、GEPA | 生命周期、评测隔离、离线优化 | 19 讲 OS 隔离采用 macOS sandbox-exec；小样本不能证明生产非劣效 |
 | 21–22 | Session 收集、SkillClaw 共享修订 | 经验聚合、候选验证和分发 | 上游源码接口需要版本核验；成功发布不等于后续业务成功 |
-| 23 | `final_assembly.py` → `shift/runtime.py` | 可追踪的值守、评测门禁、版本记录与恢复 | 自建 GLM 工具循环，读取教学快照；未启动完整 Hermes 前台 |
+| 23 | `final_assembly.py` → `shift/runtime.py` | 可追踪的值守、评测门禁、版本记录与恢复 | 自建 DeepSeek 工具循环，读取教学快照；未启动完整 Hermes 前台 |
 | assembly | `assembly/runtime`、`lifecycle`、`eval`、`skillclaw` | 使用 Hermes 的模块化总装参考 | 单独验证每个组件与集成路径；部分真实实验依赖平台沙箱 |
 | capstone | 综合实践编排 + `payment_grader.py` | 支付语义与特定队列条件的应用验收 | 只读付款调查；示例答案不能直接代替支付系统授权 |
 
@@ -22,7 +22,7 @@
 flowchart LR
     O[当前窗口教学观测] --> S[Sensor]
     S --> R[run_shift 状态机与预算]
-    K[当前采用 SKILL.md] --> A[GLM 工具循环]
+    K[当前采用 SKILL.md] --> A[DeepSeek 工具循环]
     R --> A
     A --> T[只读工具白名单]
     T --> E[独立保存的观测回执]

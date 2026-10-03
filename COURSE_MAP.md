@@ -15,7 +15,7 @@
 | 长程运行 | 07 | 经验技能化 | 已实现：[examples/07-skill-extraction/](examples/07-skill-extraction/) |
 | 长程运行 | 08 | 渐进披露 | 已实现：[examples/08-progressive-disclosure/](examples/08-progressive-disclosure/) |
 | 长程运行 | 09 | 隔离与审批 | 已实现：[examples/09-isolation-approval/](examples/09-isolation-approval/) |
-| 经验回流 | 10 | Hermes 与递归自我改进 | 背景与机制定位 |
+| 经验回流 | 10 | 执行与学习的接口 | [机制桥接](docs/10-learning-loop.md) |
 | 经验回流 | 11 | Background Review | [examples/11-background-review/](examples/11-background-review/) |
 | 经验回流 | 12 | Memory 维护 | [examples/12-memory-revision/](examples/12-memory-revision/) |
 | 经验回流 | 13 | 旧 Session 搜索与还原 | [examples/13-session-lookup/](examples/13-session-lookup/) |
@@ -31,11 +31,12 @@
 | 群体进化 | 23 | 完整的自进化巡检 Agent | [examples/23-final-assembly/](examples/23-final-assembly/) |
 | 综合实践 | CP | 端到端自进化实战 | [examples/capstone/](examples/capstone/) |
 
+## 代码与文档契约
+
+各章的稳定入口、函数和 Notebook 单元见 [chapters.json](docs/chapters.json)，由 scripts/check_docs.py 检查。单元 ID 比编辑后易变的行号更适合定位。
+
 ## 上游依赖
 
-Hermes 与 SkillClaw 源码放在 `.deps/` 目录（已 gitignore），作为上游依赖引用：
+四个上游的完整提交由 [deps.lock.json](deps.lock.json) 固定，获取脚本是 [setup_deps.sh](scripts/setup_deps.sh)。其中 Hermes aaf9688519cca58dd5f76a589a0911aff269b060、SkillClaw bf4dc2ee9430ecffb60e19630d26f57dfa2bd326 沿用课程引用版本。
 
-- Hermes Agent：`.deps/hermes-agent/`（commit aaf9688）
-- SkillClaw：`.deps/SkillClaw/`（commit bf4dc2e）
-
-依赖准备入口为 [scripts/setup_deps.sh](scripts/setup_deps.sh)。上述提交号为本轮核对的本地版本；准备脚本安装分支当前版本，不保证自动恢复这两个提交。
+模型统一 deepseek-flash，官网直连；依赖与凭证准备见 [MODEL_SETUP](docs/MODEL_SETUP.md)。源码可复现不等于已完成整轮模型与平台验证，实际覆盖见 [本轮验证](docs/DOCUMENTATION_VALIDATION.md)。

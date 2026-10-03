@@ -1,0 +1,48 @@
+{
+  "source": "real_official_api",
+  "rows": [
+    {
+      "protocol": "chat/completions",
+      "requested_model": "deepseek-flash",
+      "base_url": "https://api.deepseek.com",
+      "http_status": 200,
+      "returned_model": "deepseek-flash",
+      "usage": {
+        "prompt_tokens": 8,
+        "completion_tokens": 2,
+        "total_tokens": 10,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 8
+      },
+      "answer_matches": true,
+      "passed": true,
+      "elapsed_seconds": 0.669
+    },
+    {
+      "protocol": "responses",
+      "requested_model": "deepseek-flash",
+      "base_url": "https://api.deepseek.com",
+      "response_status": "completed",
+      "http_status": 200,
+      "returned_model": "deepseek-flash",
+      "usage": {
+        "input_tokens": 34,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 13,
+        "output_tokens_details": {
+          "reasoning_tokens": 10
+        },
+        "total_tokens": 47
+      },
+      "answer_matches": true,
+      "passed": true,
+      "elapsed_seconds": 0.65
+    }
+  ],
+  "passed": true
+}

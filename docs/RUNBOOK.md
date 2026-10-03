@@ -17,9 +17,9 @@ make doctor
 
 ## 真实实验准备
 
-1. 按 [根 README](../README.md) 执行 `bash scripts/setup_deps.sh`，记录四个上游的完整提交、环境版本与实际源码指纹。脚本获取默认分支，开发锁文件只锁离线检查依赖，不能据此声称真实运行可复现。已有目录不会自动更新。
+1. 按 [根 README](../README.md) 执行 `bash scripts/setup_deps.sh`，记录四个上游的完整提交、环境版本与实际源码指纹。脚本按 deps.lock.json 固定上游提交，已有目录不匹配时停止。开发锁只锁离线环境，真实运行仍记录依赖、协议与条件。
 2. 明确选择 Notebook、Hermes 模块化总装或 23 讲自建循环。使用对应解释器，保留各讲 README 的参数与版本要求；不要在多条路线之间复用未记录的输出。
-3. 从环境提供自己的 `GLM_API_KEY`。部分原生脚本兼容 `BIGMODEL_API_KEY`，部分配置函数会在缺少环境密钥时读取 `~/.hermes/.env`；自动运行应显式设置环境，避免隐式个人配置。密钥不写入配置、命令参数或报告。
+3. 按 [MODEL_SETUP](MODEL_SETUP.md) 显式设置 DEEPSEEK_API_KEY，使用 deepseek-flash 与官网直连，不自动加载个人密钥文件。用 scripts/model_probe.py 先区分连接故障与业务失败。
 4. 企业数据题库先运行本轮评分与隔离探针。19 讲缺少 `/usr/bin/sandbox-exec` 时拒绝裸进程执行。Linux 上离线检查通过不表示企业运行沙箱已验收。
 5. 使用全新运行编号与输出目录。保留失败记录；重试应产生新编号，不覆盖失败历史、不仅选择成功题。
 

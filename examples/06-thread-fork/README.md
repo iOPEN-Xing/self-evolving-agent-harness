@@ -1,51 +1,44 @@
-# 第 06 讲：会话分支
+# 第 06 章：从合适的历史边界建立新分支
 
-基础练习只用一条父 Thread：Turn 1 放模块背景，Turn 2 放旧事故结论，再从 Turn 1 分岔。核对继承边界，而不是让多个父 Thread 反复调查来比较回答。
+上一节：[上下文压缩](../05-context-compression/README.md) · 下一节：[经验技能化](../07-skill-extraction/README.md)
 
-## 前置条件与运行
+## 为什么要选择分叉边界
 
-使用 Python 3.12 内核。从仓库根目录启动 JupyterLab：
+旧调查里有可复用的模块背景，也有只适用于那场事故的结论。直接复用全部对话会污染新事故；完全从零开始又会丢掉入口线索。Fork 允许继承某个历史边界，但不会判断继承的信息是否适合新任务。
+
+## 一条父 Thread，两个不同层次
+
+Turn 1 放入“历史支付模块独立部署，日志入口 `legacy_payment_logs`”；Turn 2 才放“上场事故调低连接池上限，恢复后症状消失”。从 Turn 1 分叉后，新任务 A 应继承背景而不含 Turn 2 的旧结论。
+
+父 Thread 两轮、子 Thread 一轮构成基础实验。新任务的判断不能沿用旧事故根因，仍要重新核对当前数据。输入里没有旧结论才支持继承边界判断；模型口头说“不沿用”无法替代请求检查。
+
+## 代码与运行
+
+入口：[workshop.ipynb](workshop.ipynb)。环境准备后运行：
 
 ```bash
-python -m pip install jupyterlab ipykernel
-python -m jupyterlab examples/06-thread-fork/workshop.ipynb
+.venv/bin/python -m jupyterlab examples/06-thread-fork/workshop.ipynb
 ```
 
-从第一格依次运行 [workshop.ipynb](workshop.ipynb)。公共准备格自动补装 `openai-codex==0.154.0`、`litellm[proxy]==1.101.0`；已导入其他版本时，安装后须重启内核。也可提前安装 `examples/requirements-notebooks.txt`。
+| 单元 ID | 作用 | 实际检查 |
+|---|---|---|
+| `lab06-reader-03` | 定义 `fork_at_background` | 固定 SDK 底层 `CodexClient.thread_fork` |
+| `lab06-reader-05` | 父 Thread 两轮 | 背景在边界内，旧结论在边界后 |
+| `lab06-reader-07` | 子分支新任务与输入比较 | `forkedFromId`、父历史不变、子请求内容 |
+| `lab06-reader-09` | 可选共享文件 | 历史分支与工作目录不是同一隔离层 |
 
-统一使用 `GLM_API_KEY`，未设置时 notebook 弹出隐藏输入框。若希望提前设置，可在启动 JupyterLab 前执行：
+SDK 高层接口未暴露本例所需边界参数，辅助函数使用 `lastTurnId=base.id`；所选 Turn 自身包括在继承范围内。不要把它写成未经实现的高层 `last_turn_id` 参数。
 
-```bash
-read -r -s GLM_API_KEY
-export GLM_API_KEY
-```
+## 三个反例
 
-需要 GLM-5.2 普通 API 权限；模型调用会产生费用，无需 OpenAI 或 ChatGPT 登录。
+`RUN_CONTAMINATED_BACKGROUND=False`：启用后把旧根因放入 Turn 1，重新完整运行。Fork 会把它一起继承，这说明边界选择比一句“不沿用旧结论”更关键。
 
-## 运行目录与重跑
+`RUN_SECOND_BRANCH=False`：启用后从同一父历史再建 B，检查 A 新增任务是否进入 B。它多一次模型调用，并不要求两个回答相同。
 
-按照 `examples/notebook_support.py`，每次完整运行在本讲目录下新建 `.runtime/<运行编号>/`，输入和报告放在其中的 `work/`，模型请求、Turn 记录与适配器日志放在运行目录内。它不是系统临时目录，关闭连接不会删除记录。可在 notebook 中查看 `lab.runtime` 定位本次目录。
+`RUN_SHARED_FILE=False`：启用后让子写便笺、父读取，多两次模型调用。父不继承子对话，却能通过共享 `cwd` 读取文件；Fork 不是文件系统快照，也不隔离外部数据库。
 
-失败或重跑前先执行最后的清理格，再从公共准备开始；不要把上次报告当成本次结果。运行目录由 Git 忽略，分享前清除 notebook 执行输出并检查记录中的本机路径与业务材料。
+## 工程应用与练习
 
-## 基础观察
+分支适合基于同一背景比较方案、并行调查或演练反例。工程上为每个分支保留来源、边界 Turn、目标和工作目录；需要执行隔离时另建目录或容器，需要回滚时另做状态快照。分支回答不能直接作为另一个任务的当前事实。
 
-固定 SDK 的高层 `thread_fork` 未暴露 `last_turn_id`，本例通过 `CodexClient.thread_fork` 使用 `lastTurnId=base.id`；所选 Turn 包含在继承范围内。
-
-默认只执行父 Thread 两个 Turn 与子 Thread 一个 Turn。比较父历史和子首次实际请求：父含背景与旧结论，子应含背景与新任务、排除 Turn 2 的旧结论。再核对分支来源和父历史是否保持原样。输入与回答均以实际结果为准。
-
-## 可选观察
-
-- `RUN_CONTAMINATED_BACKGROUND`：在 Turn 1 同时放入旧根因，完整重跑后核对它是否被继承；仍只用一条父 Thread。
-- `RUN_SECOND_BRANCH`：从同一父 Thread 再建立 B 分支，检查 A 的新任务是否串入 B；多一次模型调用。
-- `RUN_SHARED_FILE`：子写便笺、父再读取，多两次模型调用，用于观察共享目录。
-
-三个开关默认都为 `False`；基础观察完成后直接运行最后的清理格。
-
-## 观察边界
-
-`Fork` 截取历史，不保证继承内容适用于新事故。父子仍共用 `cwd`，不提供文件快照；需要文件隔离时须另外配置工作目录或 Sandbox。
-
-## 本次修订的核查范围
-
-本次完成静态检查和相应离线核查，未重新执行完整付费模型实验。`validation/` 保留此前版本的实跑记录，不能据其中的 `passed` 判断当前 notebook 已实跑通过；应按记录中的版本和哈希区分。
+把旧结论提前放入边界，观察新请求是否携带它，再说明为什么换一个分支名字并不能消除污染。为共享文件实验设计独立工作目录，分别核对历史与磁盘状态的隔离，而不是只比较 Thread ID。

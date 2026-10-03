@@ -1,0 +1,35 @@
+{
+  "model": "deepseek-flash",
+  "dataset_version": "payment-cases-v3",
+  "expected_version": "payment-expected-v3",
+  "scoring_version": "structured-payment-zh-v2",
+  "hashes": {
+    "dataset": "bb150c64dd1ed372bb38d2eb107a9cdbffd965debe44ea1a75690ad63706fe1f",
+    "expected": "d69763d62190d416f7347ce356672bfdf1d8f3d94240289b09e418f7c9a654a7",
+    "scoring_source": "75d819f72cd5b818ba8738d15785890c90b561d7e9dd22538a3e0674451028f9",
+    "prompts": {
+      "before": "0e5e6fc25f0cd2154ba915172ba6b9e3e91f3a30470418960d35d8cd9def011c",
+      "after": "5269430203a7cf193eec360ace2e8ec33a1bff54a9640a9362be2390c8aeeb57"
+    }
+  },
+  "request_count": 8,
+  "successful_requests": 8,
+  "evaluation_complete": true,
+  "exit_code": 0,
+  "versions": {
+    "before": {
+      "business_pass": 4,
+      "format_pass": 4,
+      "overall_pass": 4,
+      "total": 4
+    },
+    "after": {
+      "business_pass": 4,
+      "format_pass": 4,
+      "overall_pass": 4,
+      "total": 4
+    }
+  },
+  "source": "real_official_api_execution",
+  "original_report_sha256": "1f978abf50bf54f17d234b10976eea0e424cdaec2cfdaa6efa1c836ff65a8179"
+}

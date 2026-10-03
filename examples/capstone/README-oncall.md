@@ -1,31 +1,27 @@
+> 历史说明：本页保留旧 GLM 巡检的设计与原文记述，内部运行附件未随仓库发布，不作为本轮证据。当前入口默认 DeepSeek，准备方法见 [MODEL_SETUP](../../docs/MODEL_SETUP.md)，主实践见 [README](README.md)。
+
 # 另一接入示例：巡检总装（历史说明）
 
 主练习为原生Hermes支付总装，见 [README.md](README.md)。下述巡检实现与历史验证分开保留。
 
-# 综合实践：Skill 层递归闭环演示
+## 综合实践：Skill 层递归闭环演示
 
 本例以 `search-api` 的 On-call 值守为场景，把 A/B 的真实模型工具循环、同步事故复盘、Skill 修订、隔离评测、版本决策、快照恢复和 C 的跨实例复用串起来。它演示 Skill 层的经历回流，不证明评测方法或版本管理方法能够自我改进。
 
 ## 运行
 
-在仓库根设置 `GLM_API_KEY`（兼容 `BIGMODEL_API_KEY`）后执行：
+若要运行保留的巡检入口，先按 [MODEL_SETUP](../../docs/MODEL_SETUP.md) 设置 `DEEPSEEK_API_KEY`，然后在仓库根执行：
 
 ```bash
 bash scripts/setup_deps.sh
 .deps/hermes-agent/.venv/bin/python examples/capstone/capstone.py
 ```
 
-需要已安装仓库依赖以及 `.deps/hermes-agent`。脚本使用 `glm-5.2`，在任何网络调用前清除代理变量。每次运行会清空并重建 `examples/capstone/output/`；3 个实例的独立 `HERMES_HOME` 和数据库均在该目录内。
+需要已安装仓库依赖以及 `.deps/hermes-agent`。当前代码使用 `deepseek-flash`，在任何网络调用前清除代理变量；下文历史验证使用的是 GLM。本轮没有重新执行该巡检入口。每次运行会清空并重建 `examples/capstone/output/`；3 个实例的独立 `HERMES_HOME` 和数据库均在该目录内。
 
 隔离评测已传入本例自己的 `run_case(skill_text, version, tc)`。每个版本、每个用例独立构造 2 个观测窗口，复用 `OncallToolLoopAgent` 和 `query_oncall_observations`，按模型请求实际执行部署、配置、指标与日志查询；执行模型只看到技能、当前窗口和本用例此前的调查记录。评测循环不调用第 23 讲的 `run_shift` 或 `turn_runner`，也不向共享会话池上传评测经历。
 
-需要先检查接口时，可单独执行真实 GLM 单用例双版本验证：
-
-```bash
-.deps/hermes-agent/.venv/bin/python docs/capstone-run-case-fix-20260930/run_eval_smoke.py
-```
-
-该命令仅运行 NI-01 的 v0/v1 各 2 轮、`compare_versions` 及 `self_check`，文件写入 `docs/capstone-run-case-fix-20260930/smoke/`，不代表完成全部 6 个用例或其他阶段。密钥仍只从环境变量读取。`run_case` 最终报告解析容忍 Markdown JSON 围栏和前后说明文字，JSON 内容及字段仍须合法；内容错误如实记为 `invalid_report`，不补写判断或工具记录。此处理不适用于裁判输出。
+旧内部接口检查只运行 NI-01 的 v0/v1 各 2 轮、`compare_versions` 及 `self_check`，不代表全部 6 个用例或其他阶段完成。该检查脚本与输出没有随仓库发布，不能作为当前可运行入口；当前公开接口探针是 `scripts/model_probe.py`。`run_case` 最终报告解析容忍 Markdown JSON 围栏和前后说明文字，JSON 内容及字段仍须合法；内容错误如实记为 `invalid_report`，不补写判断或工具记录。此处理不适用于裁判输出。
 
 ## 6 个环节
 
@@ -46,10 +42,10 @@ bash scripts/setup_deps.sh
 
 场景替换前的重新运行在首次模型请求时返回 HTTP 401，未完成 A/B 值守、候选修订及评测。该次记录为 `INCOMPLETE`、`REJECT / WAIT_FOR_MANUAL_REVIEW`，保留 v0，没有新的通过率或成功采用结论。这些历史记录不能证明当前 On-call 场景已跑通，也不能证明远程评分器已正确识别错误答案。
 
-2026-09-30 首次使用有效环境密钥全量复验：v0/v1 各 6 例、每例 2 轮，共 68 次真实请求，耗时 710.785 秒。24 轮报告均因 JSON 围栏被记为 `invalid_report`，4 项裁判为 `parse_error`，两版均 0/6；正反自检通过。该次记录见 [历史验收报告](../../docs/capstone-run-case-fix-20260930/glm-acceptance-20260930/README.md)，原始输出现保存在 [output-before](../../docs/capstone-json-report-fix-20260930/output-before/)。
+2026-09-30 首次使用有效环境密钥全量复验：v0/v1 各 6 例、每例 2 轮，共 68 次真实请求，耗时 710.785 秒。24 轮报告均因 JSON 围栏被记为 `invalid_report`，4 项裁判为 `parse_error`，两版均 0/6；正反自检通过。该次记录见 历史验收报告（原内部材料，未公开附带），原始输出现保存在 output-before（原内部材料，未公开附带）。
 
-同日修复 `run_case` 围栏解析后，再次完成阶段 3 全量验收：12 项、24 轮、66 次真实请求，647.939 秒，预算内。21 轮报告合法，8 个事故版本用例均实际进入 `VERIFYING`；v0/v1 各通过 3/6，9 项裁判评分有效，正反自检通过。仍有 3 轮正文引号未转义、3 项裁判格式或输出额度失败，以及 v0/NI-01 漏查逐实例指标；未放宽公共评分规则，也未补造查询。当前 `output/` 为本次结果，稳定副本、逐例评分、状态、耗时与完整运行差距见 [最新统一报告](../../docs/capstone-json-report-fix-20260930/README.md)。本次未重跑其他阶段或执行版本采用。
+同日修复 `run_case` 围栏解析后，再次完成阶段 3 全量验收：12 项、24 轮、66 次真实请求，647.939 秒，预算内。21 轮报告合法，8 个事故版本用例均实际进入 `VERIFYING`；v0/v1 各通过 3/6，9 项裁判评分有效，正反自检通过。仍有 3 轮正文引号未转义、3 项裁判格式或输出额度失败，以及 v0/NI-01 漏查逐实例指标；未放宽公共评分规则，也未补造查询。当时的 `output/` 为该次结果，稳定副本、逐例评分、状态、耗时与完整运行差距见最新统一报告（原内部材料，未公开附带）。本次未重跑其他阶段或执行版本采用。
 
-`output/source_manifest.json` 保存本入口、复用的 23 讲评测与版本模块、所用 Hermes Python 源文件的 SHA-256 清单与总指纹；`run_summary.json`、`decision.json` 和完成评测后生成的 `eval_report.json` 引用同一指纹。采用前核对源码未变。[完整修改与核查记录](../../docs/p0-judge-fix-20260929/README.md)。
+`output/source_manifest.json` 保存本入口、复用的 23 讲评测与版本模块、所用 Hermes Python 源文件的 SHA-256 清单与总指纹；`run_summary.json`、`decision.json` 和完成评测后生成的 `eval_report.json` 引用同一指纹。采用前核对源码未变。完整修改与核查记录（原内部材料，未公开附带）。
 
 边界：监控观测工具回执是 mock，模型仍真实调用 GLM API；跨实例共享目录只演示生产共享存储的读写语义，不包含生产一致性或权限能力；评测集是参考骨架；后台复盘此处同步调用，第 11 讲的 daemon 异步机制没有在本例重新运行。

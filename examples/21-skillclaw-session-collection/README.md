@@ -1,13 +1,25 @@
-# 第21讲：离线程序记忆
+# 会话采集：让真实经历形成可审阅候选
+
+[上一节](../20-gepa-offline-optimization/README.md) · [下一节](../22-skillclaw-shared-revision/README.md)
+
+## 问题与案例
+
+离线优化需要数据，这一章转向在线经历采集。v1 只查服务健康与上游延迟；四个真实 Hermes 任务通过本机 SkillClaw 代理，其中三次上游任务复用同类快照，另一次连接池条件产生未解决线索。直连对照绕过代理，应该不出现在代理会话池中。采集范围和来源必须先证明，再讨论提炼。
+
+## 代码阅读路线
+
+[run21.py](run21.py) 启动原生代理并关闭上传会话；[learning_worker.py](learning_worker.py) 用原生 skill_view 与教学只读工具；[audit21.py](audit21.py) 从命令回执核对快照；[evolve_once.py](evolve_once.py) 调用原生 EvolveServer.run_once；[candidate_evidence.py](candidate_evidence.py) 将真实候选落盘并核对差异。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)
 
 主入口 `run21.py` 使用原生 SkillClaw 代理采集真实 Hermes 的4个任务，另设1个直连对照，再以一次原生 `EvolveServer.run_once` 生成隔离候选。正式加载目录继续保留旧版，不发布、不采用。
 
 ```bash
-export GLM_API_KEY=...
+# 先按 MODEL_SETUP 在当前终端设置 DEEPSEEK_API_KEY
 .deps/hermes-agent/.venv/bin/python -B examples/21-skillclaw-session-collection/run21.py
 ```
 
-依赖固定 Hermes `aaf9688519cca58dd5f76a589a0911aff269b060`、SkillClaw `bf4dc2ee9430ecffb60e19630d26f57dfa2bd326`，在各源码目录按上游依赖安装。可用 `HERMES_SRC`、`SKILLCLAW_SRC` 指定同版源码。只读显式环境凭证，不自动加载个人 `.env`。模型为glm-5.2，业务记录为教学快照。
+依赖固定 Hermes `aaf9688519cca58dd5f76a589a0911aff269b060`、SkillClaw `bf4dc2ee9430ecffb60e19630d26f57dfa2bd326`，在各源码目录按上游依赖安装。可用 `HERMES_SRC`、`SKILLCLAW_SRC` 指定同版源码。只读显式环境凭证，不自动加载个人 `.env`。模型为deepseek-flash，业务记录为教学快照。
 
 每任务最多6轮、2200输出Token，150秒超时；离线管线240秒、每次提炼调用最多12000输出Token。任务不重跑，但Hermes与代理存在原生传输重试。无总截止，费用以账单为准。缺凭证直接停止，本轮不会伪造候选或统计。
 
@@ -21,4 +33,10 @@ export GLM_API_KEY=...
 
 观察题：摘录摘要、Skill归组、候选差异各一处，解释它由哪条真实工具回执支持；核对候选文件与正式旧版哈希。未完成时记录最后阶段与错误。思考题：为什么不在请求返回前直接覆盖Skill？
 
-旧 `session_collection.py` 和 `run.sh` 是另一接入示例：自建GLM循环加原生SkillHub上传。手写轨迹只存 `output/constructed-reference/`，不上传；清单标明来源，学习前仅保留真实会话。旧输出不是主练习统计，不与新轮拼接。
+旧 `session_collection.py` 和 `run.sh` 是另一接入示例：自建DeepSeek循环加原生SkillHub上传。手写轨迹只存 `output/constructed-reference/`，不上传；清单标明来源，学习前仅保留真实会话。旧输出不是主练习统计，不与新轮拼接。
+
+## 工程应用与观察练习
+
+先数本轮会话，再数请求行、任务和独立业务事件，避免把重试或重复快照放大成样本数。validated 只产生待验证候选，本例没有启动验证程序，正式 Skill 保持 v1。候选差异说明有文件生成，不说明方法可靠。本机代理转发到官网是采集组件；课程不使用第三方模型中转服务。
+
+选一个用例，保存完整输入、版本、原始输出与评分。注入缺失回执或错对象的反例，说明它在哪一层被拒绝；若未拒绝，保留为待修复问题。

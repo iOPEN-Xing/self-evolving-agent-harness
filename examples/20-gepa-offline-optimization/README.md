@@ -1,6 +1,18 @@
-# 第20讲：用小练习看清 GEPA 怎样提出修改、验证和停手
+# 离线优化：提案、搜索与采用是三个决定
 
-本练习只保留一条判断链：GEPA 提出短候选，经真实 Hermes 运行，再看独立留出是否达到最小收益。没有赢家、验证没有改善、坏候选被拒绝，都是应当留下的结果。业务记录是课程构造材料；模型请求、Hermes 工具调用和返回内容均真实执行，模型与反思模型都使用 `glm-5.2`。
+[上一节](../19-enterprise-dataset/README.md) · [下一节](../21-skillclaw-session-collection/README.md)
+
+## 问题与案例
+
+有了题与评分，才能比较候选。训练、验证、独立留出各 3 题，分别包含已到账、仅受理、跨商户同号。训练已到账记录有 settlement_evidence；仅 ACCEPTED 不代表支付完成；跨商户同号不能读取首条就给答案。训练用于产生反馈，验证用于搜索，留出只在候选固定后使用。
+
+## 代码阅读路线
+
+[run_exercise.py](run_exercise.py) 的 `Harness.execute` 执行真实 Hermes，`Adapter` 提供评分轨迹，`reflection_lm` 发起官网反思请求，`static_check` 控制候选结构与长度，`adoption` 独立判断是否采用。搜索调用官方 gepa.optimize；[hermes_worker.py](hermes_worker.py) 预载方法并只开放 query_payment。旧 [gepa_offline.py](gepa_offline.py) 是自建原型，不等于官方搜索。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)
+
+本练习只保留一条判断链：GEPA 提出短候选，经真实 Hermes 运行，再看独立留出是否达到最小收益。没有赢家、验证没有改善、坏候选被拒绝，都是应当留下的结果。业务记录是课程构造材料；模型请求、Hermes 工具调用和返回内容均真实执行，模型与反思模型都使用 `deepseek-flash`。
 
 本次精简版使用 `data/demo-v2-20260926/`：训练3题、验证3题、独立留出3题，各含已到账、仅受理、跨商户同号；另用1道公开跨商户题检验固定坏候选。旧版数据和旧版留出使用记录保留。新留出改用了新的业务背景，不能据此宣称生产泛化能力。
 
@@ -14,12 +26,12 @@ examples/20-gepa-offline-optimization/.venv/bin/python \
   examples/20-gepa-offline-optimization/run_exercise.py verify
 
 # 显式把已有凭据加载到环境；不要把 key 写进代码或命令参数。
-export GLM_API_KEY=...
+# 先按 MODEL_SETUP 在当前终端设置 DEEPSEEK_API_KEY
 examples/20-gepa-offline-optimization/.venv/bin/python -u \
   examples/20-gepa-offline-optimization/run_exercise.py all
 ```
 
-第20讲的 worker 与反思请求固定使用 `https://open.bigmodel.cn/api/paas/v4`；`GLM_BASE_URL` 不会改变它们的端点。脚本只从显式环境变量 `GLM_API_KEY` 读取密钥，worker 不读取用户或项目 `.env`。已有代理环境原样传入，不改代理。缺少密钥或遇到执行故障会留下记录并退出；不修模型答案，也不为业务答错重跑题目。
+第20讲的 worker 与反思请求固定使用 `https://api.deepseek.com`；`DEEPSEEK_BASE_URL` 不会改变它们的端点。脚本只从显式环境变量 `DEEPSEEK_API_KEY` 读取密钥，worker 不读取用户或项目 `.env`。官网模型请求直连；入口移除代理环境变量，反思客户端使用 ProxyHandler({})。缺少密钥或遇到执行故障会留下记录并退出；不修模型答案，也不为业务答错重跑题目。
 
 `all` 包含预载自测、搜索、完整候选验证、独立留出和公开故障题。`run` 只运行正常路径，`fault` 只跑公开故障题，`prepare` 生成本版本教学数据。输出统一放在 `examples/20-gepa-offline-optimization/output/native-gepa/<运行编号>/`，每次使用新目录。`latest.json` 指向最近一次命令，未必是最近一次完整联网运行。
 
@@ -61,3 +73,9 @@ examples/20-gepa-offline-optimization/.venv/bin/python -m pip install -r example
 0.02 是当前0—1逐题得分均分的绝对差，对应2个百分点；平均12000 Token是成本代理指标，真实费用按供应商账单核对。
 
 `gepa_offline.py` 保留为旧自建教学循环的补充比较，不是官方 GEPA 主练习。观察时先确认被检查文件的身份，再从反思输入、提案、真实执行、独立留出追到采用决定。
+
+## 工程应用与观察练习
+
+预算包括开发评分、反思、单题时限与独立留出，评分次数不是 HTTP 请求次数。官方仍选择基线时，送检的短提案明确标为教学审计，不冒充官方赢家。平分、token 缺失、执行不完整均不能证明新版本改善。留出开始即记 exposure，中断也不可删除标记后继续调参复用。
+
+选一个用例，保存完整输入、版本、原始输出与评分。注入缺失回执或错对象的反例，说明它在哪一层被拒绝；若未拒绝，保留为待修复问题。

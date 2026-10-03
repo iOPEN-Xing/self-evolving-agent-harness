@@ -1,47 +1,27 @@
-# 第 03 至 09 讲代码练习
+# 练习导航：按同一条问题链阅读
 
-这七份引导练习依次检查上下文装配、项目规则、压缩、历史分支、经验提炼、按需加载与执行权限。它们为后半程的后台学习、方法修订、业务评测和跨实例共享准备可观察的运行基础。业务输入均为明确构造的教学材料，模型调用、Codex 会话与工具执行使用真实接口。
+完整章节表见 [课程与代码对照](../COURSE_MAP.md)，环境步骤见 [模型与依赖准备](../docs/MODEL_SETUP.md)。
 
-| 讲次 | 练习入口 | 核对的机制 |
-| --- | --- | --- |
-| 03 | [上下文引擎](03-context-engine/README.md) | 规则与工具进入请求，文件内容经成功回执进入后续调用 |
-| 04 | [AGENTS.md](04-agents-md/README.md) | 根到当前目录的规则装配，以及新任务的规则范围 |
-| 05 | [上下文压缩](05-context-compression/README.md) | 原生压缩事件、输入缩短与任务判断状态保留 |
-| 06 | [会话分支](06-thread-fork/README.md) | 指定 Turn 为包含边界，保留模块背景，排除后续旧结论 |
-| 07 | [经验技能化](07-skill-extraction/README.md) | 实际经历生成候选方法，独立新任务通过 SkillInput 使用 |
-| 08 | [渐进披露](08-progressive-disclosure/README.md) | 描述、正文与参考资料分阶段进入请求 |
-| 09 | [隔离与审批](09-isolation-approval/README.md) | 只读、局部可写，以及具体命令的一次性审批 |
+01–03 先学会观察 Agent 如何行动、怎样接收执行中信息、文件何时进入上下文；04–09 再解决长任务中的规则、压缩、分支、方法加载与权限。10 章桥接执行与学习；11–17 分开研究 Session、Memory、Provider、Skill 和 Curator；18–20 建立业务评分、可重跑数据集与独立候选验证；21–23 再观察采集、发布、加载与恢复。综合实践将它们换成原生 Hermes 支付任务。
 
-## 前置条件与运行
+## Notebook 路线
 
-使用 Python 3.12。固定模型侧版本为 `openai-codex==0.154.0` 和 `litellm[proxy]==1.101.0`。`requirements-notebooks.txt` 同时固定 nbformat、nbclient 和 ipykernel。GLM-5.2 使用普通 API，需要相应调用权限，运行会产生 API 费用。
+从 [第 01 章](01-agent-loop/README.md) 开始，每讲 README 对应 workshop.ipynb 的稳定单元 ID。使用 Python 3.12 与 openai-codex==0.154.0，模型为 deepseek-flash。未设置 DEEPSEEK_API_KEY 时公共准备用隐藏输入框；不读取其他供应商密钥。
 
-从项目根目录在选定的虚拟环境执行：
+[notebook_support.py](notebook_support.py) 启动课程独立连接、保留脱敏请求与 Turn、配对命令回执、处理超时和释放资源。观察服务原样转发 Responses 到官网，已移除 LiteLLM 转换。每次 .runtime/run_id 权限为当前用户私有，保存本次 work 和请求，清理连接不删除证据。
 
-```bash
-python -m pip install -r examples/requirements-notebooks.txt jupyterlab
-read -r -s GLM_API_KEY
-export GLM_API_KEY
-python -m jupyterlab examples/
-```
+先检查真实请求与回执，再读最终回答。运行无异常、目录有文件、语义判断正确分别验收。可选开关默认关闭，不将默认运行结果写成可选路径已验证。
 
-`read` 隐藏输入凭证，再将它导出到当前进程环境。不要把凭证填入 Notebook 或提交到仓库。七讲只读取 `GLM_API_KEY`，缺失时直接报错，不等待交互输入，也不读取备用变量。选择同一 Python 3.12 内核，从上到下运行。
+## 脚本路线
 
-若某个单元格失败，先运行最后的关闭单元格，再从头重跑。每次连接使用新的运行目录，无需保留上次执行输出。
+11–23 的推荐入口见各章 README；第 17 章生命周期不调用模型，第 18 章直接比较指令而不启动 Hermes；第 19 章用原生 skill-up 编排自定义引擎，第 20 章由官方 GEPA 搜索，第 23 章前台是自建工具循环。不要因为共用 Hermes 解释器就称它们都运行了原生 Agent。
 
-第 03、08、09 讲需要宿主支持 Codex 原生 Sandbox。第 09 讲将可写范围限定在教学输出目录。若宿主禁止嵌套 Sandbox，启动错误会使练习失败，不能解释为写入边界生效。
+后半程运行使用 .deps/hermes-agent/.venv/bin/python。第 20 章优化器有独立锁文件与环境；第 17 / 19 章 OS 沙箱目前依赖 macOS。原生 [Assembly](assembly/README.md) 与 [Capstone](capstone/README.md) 是另两条有明确阶段和证据的路线。
 
-## 文件与输出
+## 生成、证据与复核
 
-- `workshop.ipynb`：不含执行输出的教学源文件，开头列出本讲核心代码及其位置。运行后的单元格输出可随 Notebook 手动保存，分享前清除输出并检查敏感信息。
-- `.runtime/<运行编号>/`：原始请求、命令与会话记录、教学工作目录和适配器日志，由 Git 忽略。此目录权限为当前用户私有，不作为公开附件。
-- [build_notebooks.py](build_notebooks.py)：Notebook 生成脚本；直接打开现有练习无需运行它。
-- [notebook_support.py](notebook_support.py)：负责连接、请求记录、命令回执配对、超时处理与进程释放，运行 Notebook 时需要保留。
+[build_notebooks.py](build_notebooks.py) 是早期生成器，保留作来源参考；当前读者版 Notebook 有额外的阅读和观察设计，不要运行它覆盖已有 workshop。教学源 Notebook 不提交执行输出。
 
-## 协议与观察边界
+新输出默认保留在本机独立运行目录。仓库正文中提到的旧内部验收材料不一定随代码发布；本轮公共证据以 [验证报告](../docs/DOCUMENTATION_VALIDATION.md) 为准。历史 GLM 输出不能作为当前 DeepSeek 的通过证明，当前失败记录也不能用旧轮成功片段补齐。
 
-`glm-codex` 是本地别名，远程模型为 `glm-5.2`。本地适配器使用回环地址和随机令牌，将 Codex 的 Responses 请求转为 GLM Chat Completions。凭证保留在连接进程环境中，命令环境排除凭证字段，公开输出隐藏密钥、本机路径和真实会话编号。
-
-请求记录显示 Codex 在协议转换前提供的内容。对未带 `call_id` 的 ExternalMessage，适配器补充配对信封以保留工具级资料，不提升为用户授权，也不表示模型实际发起了该工具调用。第 05 讲明确由 Notebook 扮演外部采集器。
-
-接口核对依据是本机固定版本的 SDK 签名与协议类型，并对照 [Codex App Server 官方文档](https://developers.openai.com/codex/app-server)、[AGENTS.md 规则说明](https://developers.openai.com/codex/guides/agents-md)和 [Skill 官方说明](https://developers.openai.com/codex/skills)。官方页面会更新，当前练习不能因文档变化跳过固定版本实跑。
+make verify 检查语法、数据格式、文档链接、代码入口和离线行为，付费模型和 OS 边界另验。源码版本、模型协议、输入哈希、工具回执、候选来源与独立评分一起形成可复核记录。

@@ -1,4 +1,16 @@
-# 第 11 讲：后台复盘
+# 第 11 章：从前台结束到后台复盘
+
+[上一节](../../docs/10-learning-loop.md) · [下一节](../12-memory-revision/README.md)
+
+## 问题与案例
+
+第 10 章理清学习接口，本章先验证经验回流的最小触发。前台负责用户回答，后台另建受限 Agent 检查可保存的内容；两条路径不能只按一个完成状态统计。案例向前台提出偏好保存要求，再观察复盘触发、线程启动与文件变化。前台也可能先调用 memory，因此后台没有新增变化不必然是漏记。
+
+## 代码阅读路线
+
+[run_background_review.py](run_background_review.py) 的 `make_recorder` 包装触发和工作线程，`review_tool_results` 提取请求与返回，`snapshot_memory` 比较 MEMORY / USER 文件，`main` 建立正例与阻止触发的对照。上游入口是 agent/turn_finalizer.py、turn_context.py 与 background_review.py。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)：Python 3.12、deepseek-flash、官网直连。
 
 本练习用 Hermes `AIAgent` 观察异步复盘。前台无需等待后台工作；`daemon` 线程在进程退出时可能中止，不保证持久排队或自动重试。
 
@@ -22,7 +34,13 @@
 前置：Python 3.12、仓库 `.deps/hermes-agent/.venv`、模型凭证。
 
 ```bash
-GLM_API_KEY=你的智谱key bash run.sh
+bash examples/11-background-review/run.sh
 ```
 
 输出到 `output/run.log`。复盘耗时以本次记录为准，不给出固定秒数或预先宣布成功。若复盘很快结束，前台返回时可能已观察不到存活线程；启动与结束埋点仍可帮助核对。企业接入至少记录触发、启动、结束、工具结果与失败原因。
+
+## 工程应用与观察练习
+
+服务化应分别记录触发、入队、启动、完成、工具失败与写入结果。daemon 线程适合本地观察，服务还需持久队列、取消句柄和幂等写入。进程退出、前台超时、后台失败分别处理；前台延迟不能代表后台写入延迟。
+
+选出一项成功状态，沿来源、函数、调用和文件核对，说明它能证明哪一步。再为未验证状态列出需要补充的证据。

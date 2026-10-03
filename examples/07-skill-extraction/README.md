@@ -1,56 +1,42 @@
-# 第 07 讲：经验技能化
+# 第 07 章：从一次纠正提炼方法，避免保存旧答案
 
-默认练习从实际教学对话和纠正中提炼候选 `SKILL.md`，在同一新案例上比较无 Skill 与有 Skill 的独立 Thread。入口：[workshop.ipynb](workshop.ipynb)。
+上一节：[会话分支](../06-thread-fork/README.md) · 下一节：[渐进披露](../08-progressive-disclosure/README.md)
 
-## 前置条件与运行
+## 经验怎样变成可复用技能
 
-使用 Python 3.12 内核。从仓库根目录启动 JupyterLab：
+Fork 保存历史片段，Skill 保存适用条件与方法。本章从现场生成的教学对话提炼候选 `SKILL.md`，再在同一新案例比较不加载与显式加载。重点是方法能否离开原事故，而不是生成一个文件就宣布完成学习。
 
-```bash
-python -m pip install jupyterlab ipykernel
-python -m jupyterlab examples/07-skill-extraction/workshop.ipynb
-```
+## 旧案例与新案例故意不同
 
-从第一格依次运行 [workshop.ipynb](workshop.ipynb)。公共准备格自动补装 `openai-codex==0.154.0`、`litellm[proxy]==1.101.0`；已导入其他版本时，安装后须重启内核。也可提前安装 `examples/requirements-notebooks.txt`。
+OLD-184 初始记录怀疑 CPU 饱和。补充数据是 CPU 21%、连接 60/60、等待 3600ms、下游 110ms，且变更单把池上限由 200 调至 60。它排除了原猜测，并使连接池成为待核对方向，仍未完整证明因果。
 
-统一使用 `GLM_API_KEY`，未设置时 notebook 弹出隐藏输入框。若希望提前设置，可在启动 JupyterLab 前执行：
+新案例是 CPU 23%、连接 18/200、等待 9ms、下游 4200ms、总耗时 4300ms，没有配置变更记录。合格方法应重新比对时间窗和瓶颈，不能继续把池上限当作这次根因。Skill 如果写死旧编号或旧根因，即使格式通过也有迁移风险。
 
-```bash
-read -r -s GLM_API_KEY
-export GLM_API_KEY
-```
+## 代码与运行
 
-需要 GLM-5.2 普通 API 权限；模型调用会产生费用，无需 OpenAI 或 ChatGPT 登录。
-
-## 运行目录与重跑
-
-按照 `examples/notebook_support.py`，每次完整运行在本讲目录下新建 `.runtime/<运行编号>/`，输入和报告放在其中的 `work/`，模型请求、Turn 记录与适配器日志放在运行目录内。它不是系统临时目录，关闭连接不会删除记录。可在 notebook 中查看 `lab.runtime` 定位本次目录。
-
-失败或重跑前先执行最后的清理格，再从公共准备开始；不要把上次报告当成本次结果。运行目录由 Git 忽略，分享前清除 notebook 执行输出并检查记录中的本机路径与业务材料。
-
-## 看什么
-
-读提炼出的每条方法：哪些来自这次纠正，哪些是模型额外补充的要求？格式检查只核对 YAML 头、调用名称、非空描述和正文，不判断方法质量，也未实现旧现场信息全部清除或根因语义正确的自动断言。
-
-新任务使用相同现场与提示；有 Skill 的运行通过 `SkillInput` 显式加载候选方法。比较输入和实际回答中的依据、下一步与不确定性；若没有清晰差别，如实记录，不能只因运行完成就宣布 Skill 有效。
-
-## 可选：初始化目录骨架
-
-默认流程没有调用系统 Skill Creator。Notebook 末尾的 `RUN_CREATOR_INIT` 默认关闭；启用后调用本机 `init_skill.py`，在本次 `work/creator-demo/` 生成独立演示骨架，不安装个人 Skill，不覆盖默认候选。
-
-也可在本目录的终端中运行以下命令；本机安装路径不同时，先调整 `SKILL_CREATOR_ROOT`：
+入口：[workshop.ipynb](workshop.ipynb)。环境准备后运行：
 
 ```bash
-SKILL_CREATOR_ROOT="${SKILL_CREATOR_ROOT:-$HOME/.codex/skills/.system/skill-creator}"
-SKILL_DEMO_DIR=".runtime/creator-demo-$(date +%Y%m%d-%H%M%S)"
-python3 "$SKILL_CREATOR_ROOT/scripts/init_skill.py" legacy-payment-investigation \
-  --path "$SKILL_DEMO_DIR" \
-  --resources scripts,references \
-  --interface 'short_description=调查 legacy-payment 模块告警，核对日志、指标与运行配置'
+.venv/bin/python -m jupyterlab examples/07-skill-extraction/workshop.ipynb
 ```
 
-已按 `skill-creator/scripts/generate_openai_yaml.py` 核对：`short_description` 必须为 25—64 个字符；修正后的说明为 35 个字符。目录初始化与格式校验均不能证明方法适用于新事故。
+| 单元 ID | 动作 | 对应证据 |
+|---|---|---|
+| `lab07-reader-05` | 两轮实际教学回答，提取消息 | 只保留本次 user / agent 消息 |
+| `lab07-reader-07` | 模型提炼，`save_candidate` 保存 | YAML 名称、描述、正文与完整候选 |
+| `lab07-reader-09` | 两条新 Thread 的同题对照 | 相同数据与任务；额外输入只有候选 Skill |
+| `lab07-creator-init-code` | 可选初始化目录骨架 | 另一个演示目录，不覆盖候选 |
 
-## 本次修订的核查范围
+生成提示只约束文件接口和提炼目标，没有提前替模型写调查方法。`SkillInput(name="latency-investigation", path=...)` 显式指定候选文件，不能据此宣称自动匹配正确。默认流程没有调用系统 Skill Creator；可选 `RUN_CREATOR_INIT=False` 才使用本机初始化脚本。
 
-本次完成静态检查和相应离线核查，未重新执行完整付费模型实验。`validation/` 保留此前版本的实跑记录，不能据其中的 `passed` 判断当前 notebook 已实跑通过；应按记录中的版本和哈希区分。
+## 验收分成三层
+
+格式层检查 YAML 头、调用名称、非空 description 与正文。来源层逐条追溯方法：哪条来自用户纠正，哪条是模型新增建议；新增建议需要审查。行为层比较新案例的依据、判断、下一步和不确定性。
+
+两次回答没有明显差别时，如实记录本次未呈现增量。旧案例的原始对话不会直接传给新 Thread，但候选正文可能照搬它，必须检查。当前 Notebook 没有自动判断全部旧现场信息清除或根因正确；后面的业务 Eval 将补上可重复评分。
+
+## 工程应用与练习
+
+把技能生成看作候选生产：保留来源会话、纠正点、适用范围、版本和评测，再决定是否发布。反复使用的方法优先提炼；一次性地址或版本事实更适合 Memory。新技能不应默认得到修改生产系统的权限。
+
+找出候选中一条模型额外补充的方法，说明原对话是否支持它。再把下游耗时降低、连接等待升高构成第三个样例，验证方法能否随证据改变方向，而不是只输出同一模板。

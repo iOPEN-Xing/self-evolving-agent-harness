@@ -1,4 +1,16 @@
-# 第 15 讲：Skill 自主创建
+# 第 15 章：先判断是否需要新技能，再保存候选
+
+[上一节](../14-external-memory-provider/README.md) · [下一节](../16-skill-incremental-patch/README.md)
+
+## 问题与案例
+
+前面把事实存入 Memory，本章把多步方法存为 Skill。候选生成先判断已有方法是否覆盖经验，而非每次任务都创建文件。新建、修订、不更新都是合法分支。支付经历纠正“受理成功等于最终付款成功”，模型同时看到日志排错与连接池 Skill，要判断能否形成新方法，并区分渠道结果、平台结果、通知发送与商户处理。输入是构造记录，本章未查询支付系统。
+
+## 代码阅读路线
+
+[run_lab15.py](run_lab15.py) 的 `parse_decision` 解析选择，`frontmatter` 检查文件接口，`main` 调用真实 skill_manage 保存并回读，`record_subset` 组织分支产物。正文来自模型，PAYMENT_REFERENCE 是脚本提供的字段说明，保持不同来源标识。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)：Python 3.12、deepseek-flash、官网直连。
 
 ## 练习目标
 
@@ -8,20 +20,20 @@
 
 ## 运行
 
-在专栏根目录设置 `GLM_API_KEY` 或 `BIGMODEL_API_KEY` 后执行：
+在专栏根目录设置 `DEEPSEEK_API_KEY` 后执行：
 
 ```bash
 bash examples/15-skill-autocreation/run.sh
 ```
 
-默认使用 `.deps/hermes-agent/.venv/bin/python` 和 `glm-5.2`，可通过 `HERMES_SRC`、`GLM_MODEL`、`GLM_BASE_URL` 调整。脚本只从环境变量读取凭证，模型调用前清除代理变量。
+默认使用 `.deps/hermes-agent/.venv/bin/python` 和 `deepseek-flash`，可通过 `HERMES_SRC`、`DEEPSEEK_MODEL`、`DEEPSEEK_BASE_URL` 调整。脚本只从环境变量读取凭证，模型调用前清除代理变量。
 
 每次运行都在 `output/run-*/` 内建立独立且保留的 `hermes-home/`，新运行不会读旧运行的记忆与 Skill。`output/latest-run.txt` 指向本次目录。
 
 ## 实际过程
 
 1. 在空目录内种入“日志排错”和“连接池排查”两个已有 Skill，作为模型进行比较的输入。它们不计为本次自主生成。
-2. 向真实 GLM 模型提供这 2 个 Skill 全文和构造的支付经历。关键纠正是“请求受理成功”不等于“最终支付成功”；调查还须区分渠道结果、平台结果、通知发送和商户处理。
+2. 向真实 DeepSeek 模型提供这 2 个 Skill 全文和构造的支付经历。关键纠正是“请求受理成功”不等于“最终支付成功”；调查还须区分渠道结果、平台结果、通知发送和商户处理。
 3. 模型返回 `CREATE_NEW_SKILL`、`PATCH_EXISTING` 或 `NO_UPDATE` 之一，并说明理由。三者均是合法结果，脚本不把不更新改写成创建成功。
 4. 新建时，再次调用模型生成 `SKILL.md`，使用真实 `skill_manage(create)` 保存；修订时，让模型给出唯一匹配的补丁，再调用 `skill_manage(patch)`；不更新时保留原有 Skill。
 5. 新建分支同时通过 `skill_manage(write_file)` 保存 `references/payment-records.md`。这个参考文件来自脚本预置的练习字段说明，不能冒充模型生成。
@@ -37,7 +49,7 @@ bash examples/15-skill-autocreation/run.sh
 - `patch_before_SKILL.md`、`patch_after_SKILL.md`、`patch_diff.txt`：修订分支的前后内容与差异。
 - `skills_tree.txt`：本次独立目录内的文件树。
 
-仓库内 `output/` 顶层文件是最近一次核验的结果示例。本机新运行应以 `latest-run.txt` 指向的独立目录为准，不能拿旧示例推断本次创建了什么。
+新运行输出只保留在本机，不随源码发布。本机新运行应以 `latest-run.txt` 指向的独立目录为准，不能拿旧示例推断本次创建了什么。
 
 这个练习要观察的取舍是：经验有没有形成可复用方法，现有 Skill 是否已经覆盖它。文件成功保存只证明这次选择得到了执行；方法能否改善后续任务，还需要另外评测。
 
@@ -46,3 +58,9 @@ bash examples/15-skill-autocreation/run.sh
 生成主文件的提示移除了预先规定的核心查询顺序，只保留文件格式、操作权限与不得虚构接口的要求。模型仍会看见构造的调查过程，但方法怎样组织由模型依据记录判断。脚本预置的 `PAYMENT_REFERENCE` 仍是独立来源，不能把它算成模型自主生成。
 
 旧运行记录对应旧提示，不能据此宣称新提示已运行通过。`native_background_trigger_verified=false` 与 `new_session_adoption_verified=false` 分别表示原生后台触发和新会话自动采用尚未验证；工具保存成功不会改变这两个状态。通过 `/learn` 在前台创建的方法默认由用户掌握，是否允许后台维护须核对来源、所有权与管理状态。
+
+## 工程应用与观察练习
+
+保存后继续检查适用条件、来源与重复情况。候选与活动版本分开，验证效果再采用。前台 /learn 或显式生成不自动授权后台维护；所有权、管理状态与原生触发另查。native_background_trigger_verified 和 new_session_adoption_verified 不因工具写入成功变为 true。
+
+选出一项成功状态，沿来源、函数、调用和文件核对，说明它能证明哪一步。再为未验证状态列出需要补充的证据。

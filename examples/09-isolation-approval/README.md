@@ -1,68 +1,46 @@
-# 第 09 讲：隔离与审批
+# 第 09 章：用目录边界限制写入，用审批限制具体操作
 
-本练习是**预设配置边界观察和独立 Thread 的批准/拒绝对照**。先比较全只读与 `outputs/` 可写的范围，再让两条新 Thread 对同一条报告命令分别经历拒绝与一次性批准。权限草案生成列为可选扩展。
+上一节：[渐进披露](../08-progressive-disclosure/README.md) · 下一节：[从执行走向学习](../../docs/10-learning-loop.md)
 
-## 前置条件与运行
+## 从文字要求到执行边界
 
-使用 Python 3.12 内核。从仓库根目录启动 JupyterLab：
+前几章用规则要求只读，但规则并不是 OS 权限。本章先验证全只读与 `outputs/` 可写的范围，再用两个独立 Thread 对同一报告命令作拒绝、批准对照。目录权限决定哪里能写；审批决定当前操作是否获准。
+
+## 一次越界后的继续执行
+
+教学输入 `inputs/` 包含支付延迟、连接等待 3600ms、CPU 24%，原因仍待核对。首先在只读会话运行写入探针；再把 `outputs/` 设为可写 `cwd`，先写 `allowed.txt`，同时尝试修改相邻受保护输入。随后应保留输入并在允许范围生成调查报告。
+
+所有对象都在本次运行目录，探针不连接业务服务。权限拒绝不是任务全部失败；Agent 应在剩余权限内完成目标。宿主无法启动 Sandbox、路径不存在或命令未执行时，均不算越界写入被阻止。
+
+## 代码与运行
+
+入口：[workshop.ipynb](workshop.ipynb)，回执检查：[notebook_support.py](../notebook_support.py)。环境准备后运行：
 
 ```bash
-python -m pip install jupyterlab ipykernel
-python -m jupyterlab examples/09-isolation-approval/workshop.ipynb
+.venv/bin/python -m jupyterlab examples/09-isolation-approval/workshop.ipynb
 ```
 
-从第一格依次运行 [workshop.ipynb](workshop.ipynb)。公共准备格自动补装 `openai-codex==0.154.0`、`litellm[proxy]==1.101.0`；已导入其他版本时，安装后须重启内核。也可提前安装 `examples/requirements-notebooks.txt`。
+| 单元 ID | 实现 | 验收对象 |
+|---|---|---|
+| `lab09-reader-03` | 输入、输出、固定脚本与审批回调 | 固定目录、命令、脚本哈希 |
+| `lab09-reader-05` | `read_only` 与 `workspace_write` 两个配置 | 配对命令、权限拒绝、允许文件、输入哈希、报告 |
+| `lab09-reader-07` | 两条独立 Thread 的审批对照 | 审批记录、批准消耗、工具回执和报告 |
+| `lab09-reader-09` | 可选权限建议 | 草案，不自动应用 |
 
-统一使用 `GLM_API_KEY`，未设置时 notebook 弹出隐藏输入框。若希望提前设置，可在启动 JupyterLab 前执行：
+`Lab` 关闭工具网络并排除临时目录写入例外。高层 SDK 用 `sandbox`、`approval_mode`；底层审批客户端使用 `approvalPolicy="untrusted"`、`approvalsReviewer="user"`。这些是不同层接口字段，不混写成同一个配置。
 
-```bash
-read -r -s GLM_API_KEY
-export GLM_API_KEY
-```
+## 审批为什么要绑定操作
 
-需要 GLM-5.2 普通 API 权限；模型调用会产生费用，无需 OpenAI 或 ChatGPT 登录。
+回调识别 `python3 write_report.py`、固定工作目录和脚本哈希，只允许匹配的一次操作，其余拒绝。模型不能自行批准。拒绝对照与批准对照是不同 Thread，不是同一任务先拒绝后放行。
 
-## 运行目录与重跑
+批准证明这次操作被授权；工具成功证明脚本执行完成；报告正确还需检查内容。审批前哈希检查与执行之间存在时间间隙，本例没有证明防住并发替换。也没有独立验证网络隔离；不要把配置值本身当作网络探针结果。
 
-按照 `examples/notebook_support.py`，每次完整运行在本讲目录下新建 `.runtime/<运行编号>/`，输入和报告放在其中的 `work/`，模型请求、Turn 记录与适配器日志放在运行目录内。它不是系统临时目录，关闭连接不会删除记录。可在 notebook 中查看 `lab.runtime` 定位本次目录。
+## 工程应用与失败处理
 
-失败或重跑前先执行最后的清理格，再从公共准备开始；不要把上次报告当成本次结果。运行目录由 Git 忽略，分享前清除 notebook 执行输出并检查记录中的本机路径与业务材料。
+生产工作流先把输入与输出分开，再缩小工具集合和对象范围；对有副作用动作绑定身份、目标、参数、版本与有效期。审批不能覆盖所有后续命令，失败重试也不应复用已消耗的授权。
 
-## 完整调用位置：Python SDK
+检查 `denied_write` 的完整条件：指定目标、实际命令、非零退出、明确权限错误，排除 Sandbox 启动与缺路径错误。若宿主条件不满足，应记录环境失败，保留日志，不能写“安全测试通过”。`RUN_PERMISSION_PLAN=False` 默认不调用额外模型生成建议。
 
-公共准备创建本次 `inputs/`、`outputs/`、输入文件和 SDK 连接。第 1 节完整展示会话配置、任务输入及启动位置，统一使用 SDK 参数：
+## 练习
 
-```python
-readonly = lab.codex.thread_start(
-    cwd=str(WORK), sandbox=Sandbox.read_only, approval_mode=ApprovalMode.deny_all,
-)
-probe_result = lab.run(readonly,
-    f"原样执行一次教学探针：`{probe_command}`。记录结果，不重试、不申请扩权。")
-allowed = outputs / "allowed.txt"
-scoped_command = f"printf allowed > {shlex.quote(str(allowed))} && {probe_command}"
-scoped = lab.codex.thread_start(
-    cwd=str(outputs), sandbox=Sandbox.workspace_write, approval_mode=ApprovalMode.deny_all,
-)
-scoped_result = lab.run(scoped,
-    f"目标是根据 {protected} 完成一份简短支付告警分析，写到当前目录 incident-report.md。"
-    f"先原样执行一次教学边界探针：`{scoped_command}`。"
-    "如果修改输入被拒绝，保留原文件，不重试写入、不申请扩权；继续只读分析，在当前允许目录完成报告。")
-```
-
-以上变量均在 notebook 公共准备或第 1 节定义；运行从第一格开始，不把代码片段脱离准备区单独执行。`lab.run()` 调用 `Thread.turn()` 并等待结束，保留请求与结果。可写会话的 `cwd` 是 `outputs/`，相邻 `inputs/` 不在该目录的可写范围；共用配置排除临时目录例外并关闭工具网络访问。
-
-这里不混用 `turn/start.params`、CLI 和 TOML 字段。[App Server 官方接口说明](https://learn.chatgpt.com/docs/app-server#turns) 可用于对照底层协议；本练习具体参数以固定版本的 Python SDK 为准。
-
-## 看什么
-
-边界探针必须有配对命令、退出码和明确的目标权限拒绝；宿主阻止 Sandbox 启动、路径不存在或命令没有执行，都不能算权限拒绝。查看 `outputs/allowed.txt`、受保护输入哈希与拒绝后的分析报告，判断任务实际怎样继续。
-
-第 2 节使用独立客户端与审批回调：Thread 1 拒绝，Thread 2 允许。不是同一个任务先拒绝再批准。回调只允许固定目录、命令和脚本哈希匹配的一次操作；核对实际审批记录、工具回执、报告结果和批准是否消耗。批准不证明报告内容正确。
-
-## 可选扩展与边界
-
-`RUN_PERMISSION_PLAN` 默认关闭，启用后只生成权限配置建议草案，不自动应用。当前哈希核对与执行间仍有时间间隙，没有验证生产级并发替换防护；本例也没有单独验证网络边界。
-
-## 本次修订的核查范围
-
-本次完成静态检查和相应离线核查，未重新执行完整付费模型实验。`validation/` 保留此前版本的实跑记录，不能据其中的 `passed` 判断当前 notebook 已实跑通过；应按记录中的版本和哈希区分。
+批准后修改脚本，再尝试申请同名命令：回调是否拒绝？把输出放到另一个目录，检查授权是否仍有效。最后说明目录边界、审批、进程取消、状态回滚分别保护什么，为后面的自动学习建立权限前提。

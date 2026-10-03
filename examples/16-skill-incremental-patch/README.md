@@ -1,20 +1,32 @@
-# 第 16 讲：Skill 增量修订
+# 第 16 章：把新条件融入整套方法与支持文件
+
+[上一节](../15-skill-autocreation/README.md) · [下一节](../17-curator/README.md)
+
+## 问题与案例
+
+已有 Skill 覆盖单笔足额付款，新经历是分次付款。只在末尾补一句例外可能与前面的适用范围和参考字段冲突。订单应付 10000 分，A 成功 2000 分，B 的 8000 分仍处理中，不能因最近一笔成功就宣布付清。修订应保留只读边界，按条件汇总有效成功金额，把处理中与缺失结果留为未决项。
+
+## 代码阅读路线
+
+[run_lab16.py](run_lab16.py) 的 `prepare_operations` 在内存模拟唯一匹配与顺序操作，`check_coverage` 检查更新范围，`frontmatter` 检查结构，`main` 执行真实工具并回读正文和 references/payment-records.md。verify_single、verify_split、verify_missing 是直接提供最终正文后的文字推演，未执行支付工具。
+
+[统一环境与模型准备](../../docs/MODEL_SETUP.md)：Python 3.12、deepseek-flash、官网直连。
 
 ## 练习目标
 
-向真实 GLM 模型提供已有的支付状态调查方法，以及新增的分次付款条件，让模型自主选择修订已有 Skill、新建 Skill 或不更新。若选择修订，脚本执行真实 `skill_manage` 操作，保留完整差异并回读核对。
+向真实 DeepSeek 模型提供已有的支付状态调查方法，以及新增的分次付款条件，让模型自主选择修订已有 Skill、新建 Skill 或不更新。若选择修订，脚本执行真实 `skill_manage` 操作，保留完整差异并回读核对。
 
 业务经历是明确标注的构造数据。本练习验证方法选择、文件修订及模型如何使用修订后的正文作推演，不执行真实支付查询，不验证 Hermes 原生后台触发或新会话自动采用。
 
 ## 运行
 
-在专栏根目录设置 `GLM_API_KEY` 或 `BIGMODEL_API_KEY` 后执行：
+在专栏根目录设置 `DEEPSEEK_API_KEY` 后执行：
 
 ```bash
 bash examples/16-skill-incremental-patch/run.sh
 ```
 
-默认使用 `.deps/hermes-agent/.venv/bin/python` 和 `glm-5.2`，可通过 `HERMES_SRC`、`GLM_MODEL`、`GLM_BASE_URL` 调整。脚本只从环境变量读取凭证，并在模型请求前清除代理变量。
+默认使用 `.deps/hermes-agent/.venv/bin/python` 和 `deepseek-flash`，可通过 `HERMES_SRC`、`DEEPSEEK_MODEL`、`DEEPSEEK_BASE_URL` 调整。脚本只从环境变量读取凭证，并在模型请求前清除代理变量。
 
 每次运行在 `output/run-*/` 下建立独立且保留的 `hermes-home/`；`output/latest-run.txt` 指向本次目录。新运行不会读取旧运行的 Skill 或输出。
 
@@ -40,7 +52,7 @@ bash examples/16-skill-incremental-patch/run.sh
 - `verify_single.txt`、`verify_split.txt`、`verify_missing.txt`：模型按最终正文给出的推演。
 - `skills_tree.txt`：本次目录内的实际文件树。
 
-本轮没有走到的分支不能算作已经实跑。仓库中 `output/` 顶层保存最近一次核验的结果示例；本机新运行以 `latest-run.txt` 指向的独立目录为准。
+本轮没有走到的分支不能算作已经实跑。新运行输出只保留在本机；本机新运行以 `latest-run.txt` 指向的独立目录为准。
 
 重点检查新条件有没有改变整套方法，同时是否保留了仍然有效的调查步骤与只读边界。文件写入成功并不证明方法已经改善业务表现；两份文件是否协调、3 类推演是否合理，仍须结合差异和真实任务继续检查。
 
@@ -55,3 +67,9 @@ bash examples/16-skill-incremental-patch/run.sh
 三个 `verify_*.txt` 都是直接提供最终主文件正文后的文字推演。脚本只确认回答非空，`prose_inference_cases` 中的 `semantic_verdict` 仍为“未判定”。需分别人工核对旧场景保留有效步骤、新条件正确汇总、关键结果缺失时保留未知；不能把未知金额计作成功或失败。
 
 `full_method_pack_verified`、`business_effect_verified`、原生触发与新会话采用状态仍为 `false`。完整方法包还包括支持文件和引用；自动发现、加载、实际业务表现及正式采用需要另行验证。旧运行没有 `verify_missing.txt`，不能把新增场景说成已经实跑。
+
+## 工程应用与观察练习
+
+生产更新先读目标与支持文件，再按版本生成补丁，用完整方法包评测。工具操作依次写盘，没有整体回滚，中途失败可能留下半份更新。Python read_text 不等于后台 skill_view 读取标记，native_read_before_write_verified 仍为 false。推演只检查非空、semantic_verdict 未判定，不可作为采用证据。
+
+选出一项成功状态，沿来源、函数、调用和文件核对，说明它能证明哪一步。再为未验证状态列出需要补充的证据。
