@@ -70,3 +70,18 @@ def test_existing_unpublished_file_cannot_make_a_link_pass(tmp_path, monkeypatch
     monkeypatch.setattr("scripts.check_docs.subprocess.check_output", lambda *a, **k: b"lesson.md\0")
     with pytest.raises(ValueError, match="发布"):
         check_links(root)
+
+
+def test_notebook_code_excerpt_must_follow_the_actual_code(tmp_path):
+    root = fixture(tmp_path)
+    path = root / "lesson.ipynb"
+    notebook = {"cells": [
+        {"id": "lab01-reader-05", "cell_type": "code", "source": ["print('old')\n"]},
+        {"id": "reading", "cell_type": "markdown", "source": ["```python\nprint('old')\n```\n"]},
+    ]}
+    path.write_text(json.dumps(notebook))
+    assert check_contracts(root) == 1
+    notebook["cells"][0]["source"] = ["print('new')\n"]
+    path.write_text(json.dumps(notebook))
+    with pytest.raises(ValueError, match="摘录"):
+        check_contracts(root)

@@ -26,6 +26,25 @@ def symbol_names(tree):
     return names
 
 
+def check_notebook_quotes(notebook, entry):
+    """Python 教学摘录应是某个实际代码格的连续片段，缩进和空行可不同。"""
+    def lines(source):
+        return [line.strip() for line in "".join(source).splitlines() if line.strip()]
+
+    code = [lines(cell.get("source", [])) for cell in notebook["cells"]
+            if cell.get("cell_type") == "code"]
+    for cell in notebook["cells"]:
+        if cell.get("cell_type") != "markdown":
+            continue
+        for excerpt in re.findall(r"```python\n(.*?)```", "".join(cell.get("source", [])), re.DOTALL):
+            quoted = lines([excerpt])
+            if quoted and not any(
+                actual[start:start + len(quoted)] == quoted
+                for actual in code for start in range(len(actual) - len(quoted) + 1)
+            ):
+                raise ValueError(f"Notebook 代码摘录失配：{entry} → {cell.get('id')}")
+
+
 def check_contracts(root=ROOT):
     contract = json.loads((root / "docs/chapters.json").read_text())
     chapters = contract["chapters"] + contract.get("guides", [])
@@ -41,7 +60,9 @@ def check_contracts(root=ROOT):
             if not path.is_file():
                 raise ValueError(f"代码入口不存在：{entry}")
             if path.suffix == ".ipynb":
-                ids = {cell.get("id") for cell in json.loads(path.read_text())["cells"]}
+                notebook = json.loads(path.read_text())
+                check_notebook_quotes(notebook, entry)
+                ids = {cell.get("id") for cell in notebook["cells"]}
                 declared = set(chapter["notebook_cells"])
                 mentioned = set(re.findall(r"`(lab\d\d-[a-zA-Z0-9-]+)`", text))
                 if declared != mentioned or not declared <= ids:
