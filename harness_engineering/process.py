@@ -12,7 +12,7 @@ def _kill_group(process, sig):
         pass
 
 
-def run_bounded(command, *, timeout, cwd=None, env=None, terminate_grace=1):
+def run_bounded(command, *, timeout, cwd=None, env=None, terminate_grace=1, text=True):
     """禁止 shell；只用于会结束的作业，不用于启动常驻共享服务。"""
     if os.name != "posix":
         raise RuntimeError("进程组取消当前仅支持 macOS/Linux")
@@ -22,7 +22,7 @@ def run_bounded(command, *, timeout, cwd=None, env=None, terminate_grace=1):
            for v in (timeout, terminate_grace)):
         raise ValueError("时限必须是有限正数")
     process = subprocess.Popen(command, cwd=cwd, env=env, start_new_session=True,
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=text)
     try:
         stdout, stderr = process.communicate(timeout=timeout)
         return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)

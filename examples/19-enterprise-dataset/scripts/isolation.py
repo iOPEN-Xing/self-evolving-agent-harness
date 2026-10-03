@@ -1,7 +1,9 @@
 """macOS 操作系统沙箱：只允许当前题输入和执行代码，不允许裁判文件。"""
-import json,os,subprocess,uuid
+import json,os,sys,uuid
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];OUT=Path(os.environ.get('LECTURE19_OUTPUT_DIR',str(ROOT/'output/demo'))).resolve()
+sys.path.insert(0,str(ROOT.parents[1]))
+from harness_engineering.process import run_bounded
 def sbstr(path): return json.dumps(str(Path(path).resolve()),ensure_ascii=False)
 def prepare(workspace,python,output_path=None):
     if not Path('/usr/bin/sandbox-exec').is_file(): raise RuntimeError('缺少已验证的操作系统沙箱，拒绝裸进程执行')
@@ -23,4 +25,5 @@ def launch(args,workspace,python,timeout=600,output_path=None):
     runtime,profile=prepare(workspace,python,output_path)
     env={k:v for k,v in os.environ.items() if k in {'PATH','LANG','LC_ALL','TZ','GLM_API_KEY','GLM_BASE_URL','LECTURE_HERMES_SOURCE','HTTPS_PROXY','HTTP_PROXY','ALL_PROXY','NO_PROXY','https_proxy','http_proxy','all_proxy','no_proxy'}}
     env.update(PYTHONDONTWRITEBYTECODE='1',COURSE_RUNTIME_DIR=str(runtime),HERMES_HOME=str(runtime/'hermes-home'),TMPDIR=str(runtime))
-    return subprocess.run(['/usr/bin/sandbox-exec','-f',str(profile),*args],env=env,cwd=workspace,timeout=timeout,capture_output=True),runtime
+    # 沙箱父进程超时后，后台模型 worker 也必须随整个作业组停止。
+    return run_bounded(['/usr/bin/sandbox-exec','-f',str(profile),*args],env=env,cwd=workspace,timeout=timeout,text=False),runtime

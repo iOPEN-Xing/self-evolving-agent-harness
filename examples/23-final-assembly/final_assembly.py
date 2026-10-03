@@ -37,7 +37,7 @@ MANIFEST_PATH = OUTPUT_DIR / "versions.json"
 EVAL_REPORT_PATH = OUTPUT_DIR / "eval_report.json"
 DECISION_LOG_PATH = OUTPUT_DIR / "decision_log.json"
 SNAPSHOT_DIR = OUTPUT_DIR / "snapshots"
-for root in (HERMES_ROOT, SKILLCLAW_DIR, EXAMPLE_DIR):
+for root in (REPO_ROOT, HERMES_ROOT, SKILLCLAW_DIR, EXAMPLE_DIR):
     sys.path.insert(0, str(root))
 
 from hermes_state import SessionDB  # noqa: E402
@@ -51,6 +51,7 @@ from versioning import policy  # noqa: E402
 from versioning import snapshot as vsnap  # noqa: E402
 
 from shift import (run_shift, build_review_input, TOOL_SCHEMAS)
+from harness_engineering.process import run_bounded
 
 SKILL_NAME = "oncall-service-investigation"
 GLM_BASE = "https://open.bigmodel.cn/api/paas/v4"
@@ -331,7 +332,13 @@ def run_evolve(store, publish_mode, tag):
                "--storage-backend", "local", "--local-root", str(store),
                "--model", GLM_MODEL, "--publish-mode", publish_mode]
     log(f"执行：{' '.join(command)}")
-    proc = subprocess.run(command, cwd=SKILLCLAW_DIR, env=env, capture_output=True, text=True)
+    try:
+        proc = run_bounded(command, cwd=SKILLCLAW_DIR, env=env,
+                           timeout=float(os.environ.get('EVOLVE_JOB_TIMEOUT_SECONDS', '900')))
+    except subprocess.TimeoutExpired as exc:
+        for label, value in (("stdout", exc.stdout), ("stderr", exc.stderr)):
+            (OUTPUT_DIR / f"evolve_{tag}.{label}.txt").write_text(redact(value or ""), encoding="utf-8")
+        raise RuntimeError("后台演化作业超时，已取消子进程；保留输出，本轮不采用候选") from None
     for label, value in (("stdout", proc.stdout), ("stderr", proc.stderr)):
         path = OUTPUT_DIR / f"evolve_{tag}.{label}.txt"
         path.write_text(redact(value), encoding="utf-8")

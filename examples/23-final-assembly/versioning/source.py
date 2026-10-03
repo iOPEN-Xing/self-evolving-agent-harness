@@ -11,6 +11,9 @@ def fingerprint(repo, entrypoint, dependencies=()):
     repo = Path(repo).resolve()
     entrypoint = Path(entrypoint)
     roots = [repo / "examples/23-final-assembly", *map(Path, dependencies)]
+    shared = repo / "harness_engineering"
+    if shared.exists() and shared not in roots:
+        roots.append(shared)
     files = {entrypoint}
     for root in roots:
         if root.is_symlink() or not root.is_dir():
@@ -31,7 +34,7 @@ def fingerprint(repo, entrypoint, dependencies=()):
     digest = hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest()
     return {"schema": 2, "sha256": digest, "files": hashes,
             "entrypoint": str(entrypoint.resolve().relative_to(repo)),
-            "dependencies": [str(p.resolve()) for p in roots[1:]]}
+            "dependencies": [str(Path(p).resolve()) for p in dependencies]}
 
 
 def unchanged(manifest, repo):
