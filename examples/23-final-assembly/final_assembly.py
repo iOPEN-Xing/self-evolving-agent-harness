@@ -171,7 +171,9 @@ class GlmToolLoopAgent:
                 '需要跨轮继续调查时保留线索。最终请调用 submit_report 提交判断，字段为：'
                 '{"assessment":"healthy|suspected|unresolved|recovering|recovered",'
                 '"report":"中文判断、服务对象、时间窗口、依据和未决事项",'
-                '"next_state":"PATROLLING|INVESTIGATING|VERIFYING"}。'
+                '"next_state":"PATROLLING|INVESTIGATING|VERIFYING",'
+                '"service_recovered":false,"open_questions":[]}。'
+                '未决问题每项必须含 id、question、evidence_refs 字符串列表和 next_check。'
                 '调查完成可以建议 VERIFYING，是否结束事故由观测与状态机共同核对。')
             if self.skill_mode == 'prompt':
                 instruction += '\n当前技能直接加入提示词：\n' + self.skill_view
@@ -465,7 +467,8 @@ def main():
         evidence(5, {"report": str(EVAL_REPORT_PATH), "skipped": report["skipped"]})
 
         section(6, "先验证评分器和检查完整性，再按三标准决定采用或回退")
-        decision = policy.decide(cmp, self_check=sc, v0_eval=v0_eval, v1_eval=v1_eval) if cmp is not None else {
+        decision = policy.decide(cmp, self_check=sc, v0_eval=v0_eval, v1_eval=v1_eval,
+            expected_skill_hashes={"v0": sha256(v0_content), "v1": sha256(candidate_content)}) if cmp is not None else {
             "decision": "ROLLBACK", "checks": [],
             "reason_summary": "本轮演化未产出候选，闭环以 ROLLBACK 结束；三标准未执行。",
         }

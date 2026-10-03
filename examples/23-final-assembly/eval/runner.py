@@ -5,6 +5,8 @@
 """
 
 import time
+import hashlib
+import json
 from typing import Callable, Dict, Any, List
 
 from .cases import EVAL_CASES, SKILL_V0
@@ -33,6 +35,9 @@ def run_eval(skill_text: str, version_label: str,
         time.sleep(0.4)  # 避免限流
     return {
         "version": version_label,
+        "skill_sha256": hashlib.sha256(skill_text.encode("utf-8")).hexdigest(),
+        "case_set_sha256": hashlib.sha256(json.dumps(cases, sort_keys=True,
+            ensure_ascii=False).encode("utf-8")).hexdigest(),
         "results": results,
     }
 

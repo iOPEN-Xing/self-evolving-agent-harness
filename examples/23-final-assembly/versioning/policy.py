@@ -10,6 +10,9 @@
 """
 
 from typing import Dict, Any
+import hashlib
+import json
+import re
 
 from eval.cases import EVAL_CASES
 from eval.judge import SELF_CHECK_EXPECTED, parse_judge_response, deterministic_score
@@ -40,9 +43,21 @@ def rows_of(value):
 
 
 def complete_eval(value, label):
+    """证据结构或重算异常都视为不完整，不让损坏报告中断安全决策。"""
+    try:
+        return _complete_eval(value, label)
+    except (KeyError, TypeError, ValueError, AttributeError, IndexError):
+        return False
+
+
+def _complete_eval(value, label):
     rows = rows_of(value)
     expected = {c["id"]: c for c in EVAL_CASES}
     return (isinstance(value, dict) and value.get("version") == label
+            and isinstance(value.get("skill_sha256"), str)
+            and re.fullmatch(r"[0-9a-f]{64}", value["skill_sha256"]) is not None
+            and value.get("case_set_sha256") == hashlib.sha256(json.dumps(EVAL_CASES,
+                sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
             and len(rows) == len(expected)
             and all(isinstance(r, dict) and isinstance(r.get("case_id"), str) for r in rows)
             and {r["case_id"] for r in rows} == set(expected)
@@ -53,6 +68,8 @@ def complete_eval(value, label):
                     and isinstance(r.get("execution"), dict)
                     and r["execution"].get("fixture") is not True
                     and len(r["execution"].get("session",{}).get("turns",[])) == 2
+                    and all(t.get("skill_sha256") == value["skill_sha256"]
+                            for t in r["execution"]["session"]["turns"])
                     and r["deterministic"] == {k:{"pass":p,"detail":d} for k,(p,d) in
                          deterministic_score(r["answer"],expected[r["case_id"]]["assertions"],r["execution"]).items()}
                     for r in rows))
@@ -81,9 +98,18 @@ def evaluation_checks(check, v0, v1):
     ]
 
 
-def decide(comparison: Dict[str, Any], *, self_check=None, v0_eval=None, v1_eval=None) -> Dict[str, Any]:
+def decide(comparison: Dict[str, Any], *, self_check=None, v0_eval=None, v1_eval=None,
+           expected_skill_hashes=None) -> Dict[str, Any]:
     """核对原始评测和自检后给出 ADOPT / ROLLBACK / REJECT 决策。"""
     gates = evaluation_checks(self_check, v0_eval, v1_eval)
+    if expected_skill_hashes is not None:
+        # 调用方从实际加载内容计算哈希；不能只相信报告自身填写的版本名称。
+        matched = (isinstance(expected_skill_hashes, dict)
+                   and set(expected_skill_hashes) == {"v0", "v1"}
+                   and all(isinstance(report, dict) and report.get("skill_sha256") == expected_skill_hashes[label]
+                           for label, report in (("v0", v0_eval), ("v1", v1_eval))))
+        gates.append({"check": "loaded_skills_match", "pass": bool(matched),
+                      "detail": "评测每轮、报告和实际待采用技能的 SHA-256 必须一致"})
     if not all(c["pass"] for c in gates):
         return {"decision": "REJECT", "status": "WAIT_FOR_MANUAL_REVIEW", "checks": gates,
                 "reason_summary": "禁止自动采用，保留 v0，等待人工检查：" +
