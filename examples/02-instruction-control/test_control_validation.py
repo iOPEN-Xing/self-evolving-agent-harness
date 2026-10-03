@@ -151,6 +151,8 @@ class SdkEventTests(unittest.TestCase):
 
     def test_environment_installs_wrong_version_then_requires_restart(self):
         import json
+        # 内核启动时 IPython 已加载；先完成导入再模拟版本，避免污染第三方导入。
+        import IPython.display  # noqa: F401
         source = "".join(json.loads(Path(__file__).with_name("workshop.ipynb").read_text())["cells"][2]["source"])
         with patch("sys.version_info", (3, 12)), patch("importlib.metadata.version", return_value="0.153.0"), \
                 patch("subprocess.check_call") as install, patch.dict("sys.modules", {"openai_codex": Mock()}):

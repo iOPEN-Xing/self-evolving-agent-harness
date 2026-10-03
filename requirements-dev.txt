@@ -1,0 +1,6 @@
+# 只安装离线工程检查依赖；不安装模型代理和 Hermes 全套运行依赖。
+pytest==8.4.2
+ruff==0.16.3
+PyYAML==6.0.3
+ipython==9.11.0
+openai-codex==0.154.0
