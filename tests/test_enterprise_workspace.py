@@ -28,6 +28,7 @@ def suite(tmp_path, monkeypatch):
         calls.append(command)
         return subprocess.CompletedProcess(command, 0, stdout="ok", stderr="")
     monkeypatch.setattr(module.subprocess, "run", run)
+    monkeypatch.setattr(module, "run_bounded", run)
     return module, root, out, calls
 
 
@@ -52,3 +53,22 @@ def test_run_history_cannot_be_overwritten(suite):
     with pytest.raises(SystemExit):
         module.main()
     assert len(calls) == prior
+
+
+def test_native_timeout_preserves_status_and_redacted_partial_logs(suite, monkeypatch):
+    import json
+    module, root, out, _ = suite
+    token = 'synthetic-not-a-real-key'
+    monkeypatch.setenv('GLM_API_KEY', token)
+    def timeout(command, **kwargs):
+        if 'run' in command:
+            raise subprocess.TimeoutExpired(command, 1, output='partial ' + token, stderr='timeout')
+        return subprocess.CompletedProcess(command, 0, stdout='validated', stderr='')
+    monkeypatch.setattr(module, 'run_bounded', timeout)
+    with pytest.raises(SystemExit):
+        module.main()
+    status = json.loads((out / 'native-run-status.json').read_text())
+    assert [r['returncode'] for r in status['runs']] == [124, 124]
+    assert token not in (out / 'run-hermes.log').read_text()
+    assert 'partial' in (out / 'run-hermes.log').read_text()
+    assert (root / 'skill-up.config.yaml').read_text() == 'personal: keep-me\n'

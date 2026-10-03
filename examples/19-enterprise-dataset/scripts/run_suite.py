@@ -4,7 +4,22 @@ import json,os,sys,subprocess,hashlib,time
 import yaml
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];OUT=Path(os.environ.get('LECTURE19_OUTPUT_DIR',str(ROOT/'output/demo'))).resolve()
+sys.path.insert(0,str(ROOT.parents[1]))
+from harness_engineering.process import run_bounded
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def execute(command,env,path,timeout):
+    try:
+        result=run_bounded(command,env=env,cwd=ROOT,timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        result=subprocess.CompletedProcess(command,124,exc.stdout or '',exc.stderr or '')
+    log=(result.stdout or '')+(result.stderr or '')
+    for name in ('GLM_API_KEY','BIGMODEL_API_KEY','OPENAI_API_KEY'):
+        key=os.environ.get(name,'')
+        if key: log=log.replace(key,'[凭证已移除]')
+    path.write_text(log)
+    return result
+def save_status(validations,runs):
+    (OUT/'native-run-status.json').write_text(json.dumps(dict(validations=validations,runs=runs),ensure_ascii=False,indent=2))
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     if (OUT/'protocol.json').exists(): raise SystemExit('输出目录已有一轮记录；请另设 LECTURE19_OUTPUT_DIR，不覆盖历史。')
@@ -32,16 +47,13 @@ def main():
         rendered=yaml.safe_dump(materialized,allow_unicode=True,sort_keys=False)
         config.write_text(rendered)
         binary=str(ROOT/'bin/skill-up')
-        cmd=[binary,'--config',str(user_config),'validate',str(config)];r=subprocess.run(cmd,env=env,cwd=ROOT,capture_output=True,text=True)
-        (OUT/f'validate-{variant}.log').write_text(r.stdout+r.stderr);validations.append(dict(variant=variant,returncode=r.returncode))
+        cmd=[binary,'--config',str(user_config),'validate',str(config)];r=execute(cmd,env,OUT/f'validate-{variant}.log',120)
+        validations.append(dict(variant=variant,returncode=r.returncode));save_status(validations,runs)
         if r.returncode: raise SystemExit('原生 YAML 校验失败')
         cmd=[binary,'--config',str(user_config),'run',str(config),'--output-dir',str(OUT/'skill-up'/variant),'--iteration','1','--event-log',str(OUT/f'skill-up-{variant}-events.jsonl')]
-        r=subprocess.run(cmd,env=env,cwd=ROOT,capture_output=True,text=True,timeout=4500)
+        r=execute(cmd,env,OUT/f'run-{variant}.log',4500)
         # 上游在无凭证分支只得到适配器固定信息；凭证绝不置于配置/SessionInput。
-        log=r.stdout+r.stderr
-        key=os.environ.get('GLM_API_KEY','')
-        if key: log=log.replace(key,'[凭证已移除]')
-        (OUT/f'run-{variant}.log').write_text(log);runs.append(dict(variant=variant,returncode=r.returncode))
-    (OUT/'native-run-status.json').write_text(json.dumps(dict(validations=validations,runs=runs),ensure_ascii=False,indent=2))
+        runs.append(dict(variant=variant,returncode=r.returncode));save_status(validations,runs)
     print(json.dumps(dict(validations=validations,runs=runs),ensure_ascii=False))
+    if any(row['returncode'] for row in runs): raise SystemExit('原生评测进程失败；详见本轮状态与日志。')
 if __name__=='__main__':main()
