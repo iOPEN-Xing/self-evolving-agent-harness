@@ -40,9 +40,9 @@ def snapshot(monkeypatch):
     return load_module("snapshot_under_test", "examples/23-final-assembly/versioning/snapshot.py")
 
 
-def seed(path, sid="live"):
+def seed(path, sid="live", content=None):
     db = SQLiteSessions(path)
-    db.import_sessions([{"id": sid, "messages": [{"role": "user", "content": sid}]}])
+    db.import_sessions([{"id": sid, "messages": [{"role": "user", "content": sid if content is None else content}]}])
     return db
 
 
@@ -152,15 +152,19 @@ def test_restore_into_wal_database(snapshot, tmp_path):
     reader.close()
 
 
-def test_same_message_count_with_changed_content_cannot_activate(snapshot, tmp_path, monkeypatch):
+@pytest.mark.parametrize('structured', [False, True])
+def test_same_message_count_with_changed_content_cannot_activate(snapshot, tmp_path, monkeypatch, structured):
     live = tmp_path / "state.db"
-    db = seed(live)
+    db = seed(live, content=[{'type': 'text', 'text': 'live'}] if structured else 'live')
     snapshot.take_snapshot(db, "v0", "skill", tmp_path / "snapshots")
     db.close()
     before = live.read_bytes()
     class LossyDB(SQLiteSessions):
         def import_sessions(self, rows):
-            rows[0]["messages"][0]["content"] = "lost original content"
+            if structured:
+                rows[0]['messages'][0]['content'][0]['text'] = 'lost original content'
+            else:
+                rows[0]["messages"][0]["content"] = "lost original content"
             return super().import_sessions(rows)
     monkeypatch.setitem(sys.modules, "hermes_state", SimpleNamespace(SessionDB=LossyDB))
     with pytest.raises(ValueError):

@@ -48,7 +48,8 @@ def _digest(data):
 def _messages(rows):
     # 数据库可能重新分配 message.id；核对持久化的消息语义而非自增主键。
     fields = ('role', 'content', 'tool_calls', 'tool_call_id', 'tool_name')
-    return {r['id']: [{field: m.get(field) for field in fields} for m in r['messages']] for r in rows}
+    return json.dumps({r['id']: [{field: m.get(field) for field in fields} for m in r['messages']] for r in rows},
+                      sort_keys=True, ensure_ascii=False)
 
 
 def _read_snapshot(root, label):
