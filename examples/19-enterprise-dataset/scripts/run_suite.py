@@ -15,7 +15,8 @@ def main():
     (OUT/'protocol.json').write_text(json.dumps(protocol,ensure_ascii=False,indent=2)+'\n')
     env=os.environ.copy();env['LECTURE19_OUTPUT_DIR']=str(OUT);env['TMPDIR']=str(runtime);env['PYTHONDONTWRITEBYTECODE']='1';env['PATH']=str(Path(sys.executable).parent)+os.pathsep+env.get('PATH','')
     # 禁用原生用户配置发现，避免引入本机个人实验配置；不在命令行放密钥。
-    (ROOT/'skill-up.config.yaml').write_text('{}\n')
+    user_config=runtime/'skill-up.config.yaml'
+    user_config.write_text('{}\n')
     validations=[];runs=[]
     for variant in ['legacy','hermes']:
         source_config=ROOT/'evals'/f'eval.demo.{variant}.yaml'
@@ -23,14 +24,18 @@ def main():
         materialized=yaml.safe_load(source_config.read_text())
         local=materialized['engine']['custom']['local']
         local['command']=sys.executable;local['args'][0]=str(ROOT/'scripts/engine.py')
-        config=ROOT/'evals'/f'eval.runtime.{OUT.name}.{variant}.yaml'
+        # 移动配置后显式绑定资源路径，避免相对路径随 YAML 所在目录变化。
+        for skill in materialized['skills']:
+            if skill['source']=='local_path': skill['path']=str((ROOT/skill['path']).resolve())
+        materialized['cases']['files']=[str((ROOT/path).resolve()) for path in materialized['cases']['files']]
+        config=OUT/f'eval.runtime.{variant}.yaml'
         rendered=yaml.safe_dump(materialized,allow_unicode=True,sort_keys=False)
-        config.write_text(rendered);(OUT/f'eval.runtime.{variant}.yaml').write_text(rendered)
+        config.write_text(rendered)
         binary=str(ROOT/'bin/skill-up')
-        cmd=[binary,'--config',str(ROOT/'skill-up.config.yaml'),'validate',str(config)];r=subprocess.run(cmd,env=env,cwd=ROOT,capture_output=True,text=True)
+        cmd=[binary,'--config',str(user_config),'validate',str(config)];r=subprocess.run(cmd,env=env,cwd=ROOT,capture_output=True,text=True)
         (OUT/f'validate-{variant}.log').write_text(r.stdout+r.stderr);validations.append(dict(variant=variant,returncode=r.returncode))
         if r.returncode: raise SystemExit('原生 YAML 校验失败')
-        cmd=[binary,'--config',str(ROOT/'skill-up.config.yaml'),'run',str(config),'--output-dir',str(OUT/'skill-up'/variant),'--iteration','1','--event-log',str(OUT/f'skill-up-{variant}-events.jsonl')]
+        cmd=[binary,'--config',str(user_config),'run',str(config),'--output-dir',str(OUT/'skill-up'/variant),'--iteration','1','--event-log',str(OUT/f'skill-up-{variant}-events.jsonl')]
         r=subprocess.run(cmd,env=env,cwd=ROOT,capture_output=True,text=True,timeout=4500)
         # 上游在无凭证分支只得到适配器固定信息；凭证绝不置于配置/SessionInput。
         log=r.stdout+r.stderr
