@@ -104,6 +104,12 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
               events_path, state=None, investigation_record=None, end_shift=False,
               max_patrol_rounds=8, investigation_budget=40, user_alias='instance-A'):
     """一段会话可跨多轮；续班必须显式接收上一段调查记录。"""
+    ticks = list(ticks)
+    if (not ticks or any(type(t) is not int or t < 0 for t in ticks)
+            or any(a >= b for a, b in zip(ticks, ticks[1:]))):
+        raise ValueError('班次需要非空且严格递增的非负整数时钟')
+    if any(type(n) is not int or n <= 0 for n in (max_patrol_rounds, investigation_budget)):
+        raise ValueError('执行预算必须是正整数')
     state = copy.deepcopy(state) if state else dict(
         run_id=run_id, shift_id=shift_id, state='PATROLLING', incident_id=None,
         sensor={}, transitions=[], records=[], patrol_rounds=0, investigation_calls=0,
@@ -112,6 +118,8 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
         raise ValueError('班次身份或续班状态不符')
     if state['records'] and investigation_record != state['records']:
         raise ValueError('续班缺少完整调查记录')
+    if state['records'] and ticks[0] <= state['records'][-1]['logical_time']:
+        raise ValueError('续班时钟不能倒退或重复，不能重放恢复窗口')
     session = dict(session_id=session_id, run_id=run_id, shift_id=shift_id,
                    incident_id=state['incident_id'], user_alias=user_alias,
                    source='real_glm_toolloop', timestamp=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),
@@ -127,10 +135,22 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
         event = poll_sensor(observed, state['sensor'])
         ref = f'{session_id}/turn-{len(session["turns"])+1}'
         if event['type'] == 'ALERT' and state['state'] == 'PATROLLING':
-            state['incident_id'] = f'{shift_id}-incident-1'
+            count = sum(r['to'] == 'INVESTIGATING' for r in state['transitions']) + 1
+            state['incident_id'] = f'{shift_id}-incident-{count}'
             transition(state, 'INVESTIGATING', 'Sensor 超时阈值告警', ref, events_path, tick)
         audit = []
-        dispatch = ObservationTools(scenario_id, tick, audit)
+        tools = ObservationTools(scenario_id, tick, audit)
+        investigating = state['state'] != 'PATROLLING'
+
+        def dispatch(name, arguments):
+            # 按实际请求收费，不能相信适配器事后报告的 tool_calls 数量。
+            # 参数不合法的调查请求也占一次预算；超限请求在读取前拒绝。
+            if investigating:
+                if state['investigation_calls'] >= investigation_budget:
+                    session['budget_exhausted'] = True
+                    raise ValueError('调查工具预算已耗尽')
+                state['investigation_calls'] += 1
+            return tools(name, arguments)
         context = dict(run_id=run_id, shift_id=shift_id, incident_id=state['incident_id'],
                        state=state['state'], logical_time=tick, service=observed['service'],
                        recovery_window_minutes=10,
@@ -142,8 +162,9 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
         messages = turn['messages']
         turn.update(turn_num=len(session['turns'])+1, run_id=run_id, shift_id=shift_id,
                     incident_id=state['incident_id'], phase_context=context, observation_reads=audit)
-        if state['state'] != 'PATROLLING':
-            state['investigation_calls'] += len(turn['tool_calls'])
+        if session.get('budget_exhausted'):
+            turn['stop_reason'] = 'investigation_budget_exhausted'
+            turn['assessment'] = None
         decision = turn.get('assessment') or {}
         requested = decision.get('next_state')
         denied = None
@@ -154,6 +175,7 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
                 transition(state, requested, '完成本轮调查，进入持续复查', ref, events_path, tick)
             elif (state['state'] == 'VERIFYING' and requested == 'PATROLLING'
                   and event['type'] == 'RECOVERY' and metrics_read
+                  and turn['stop_reason'] == 'final_answer'
                   and decision.get('assessment') == 'recovered'):
                 transition(state, requested, '连续新鲜观测满足恢复窗口，模型完成指标复查', ref, events_path, tick)
                 state['sensor']['active'] = False
@@ -178,7 +200,7 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
     session['incident_id'] = state['incident_id']
     if end_shift:
         transition(state, 'SHIFT_ENDED', '值守轮数结束，保留未决事项供交班复盘',
-                   f'{session_id}/end', events_path, ticks[-1])
+                   f'{session_id}/end', events_path, state['records'][-1]['logical_time'])
     session['state_after'] = state['state']
     session['transitions'] = [r for r in state['transitions'] if r['record_ref'].startswith(session_id+'/')]
     session['review_input'] = build_review_input([session], state)
@@ -192,5 +214,5 @@ def build_review_input(sessions, state):
                 final_state=state['state'], service_recovered=bool(state.get('service_recovered')),
                 open_questions=copy.deepcopy(state.get('open_questions',[])), unresolved=(
                     [state['incident_id']] if state['sensor'].get('active') else []),
-                complete=all(s['num_turns']==s['expected_turns'] and not s.get('budget_exhausted') for s in sessions) and all(t['stop_reason']=='final_answer' and t.get('assessment')
+                complete=bool(sessions) and all(s['expected_turns'] > 0 and s['num_turns']==s['expected_turns'] and not s.get('budget_exhausted') for s in sessions) and all(t['stop_reason']=='final_answer' and t.get('assessment')
                              and t['observation_reads'] for s in sessions for t in s['turns']))
