@@ -4,6 +4,21 @@
 
 > 课程入口：https://time.geekbang.org/column/intro/101188801
 
+## 工程分析与验证入口
+
+先阅读 [架构与可信边界](docs/ARCHITECTURE.md)，再按 [运行和故障处置手册](docs/RUNBOOK.md) 选择实验路线。[工程复核记录](docs/ENGINEERING_REVIEW.md) 对照本轮修复、测试及未验证范围。
+
+无需模型密钥的工程检查使用独立 Python 3.12 环境：
+
+```bash
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python --require-hashes -r requirements-dev.lock.txt
+make verify
+make doctor
+```
+
+该入口检查源码、Notebook 单元格和离线回归；真实模型、Hermes/SkillClaw 安装与操作系统沙箱按各讲入口另行验收。开发锁文件不替代真实运行环境的依赖清单。
+
 ## 实验目录
 
 ### 第 01—09 讲：Codex SDK + Notebook

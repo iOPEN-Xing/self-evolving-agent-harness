@@ -11,6 +11,10 @@ export GLM_API_KEY=...
 
 ## 接入情况
 
+本轮工程回归见 [运行手册](../../docs/RUNBOOK.md)。依赖准备脚本默认获取上游当前分支，需记录实际完整提交，不能直接视为固定版本重现。后台演化作业默认时限 900 秒，可由 `EVOLVE_JOB_TIMEOUT_SECONDS` 调整；仍未实现整轮费用上限。
+
+快照改为 `snapshots/<version>/{manifest.json,state_snapshot.json,SKILL.md}`，完整核验后才恢复；旧快照需要重新生成。时间点恢复会移除后续会话，仅用于本讲演练。生产 Skill 回退应保留流水。工程检查可在根目录 `make verify` 无密钥运行。
+
 | 部件 | 本轮情况 |
 |---|---|
 | 在线工具循环 | 自建GLM循环，四类只读巡检工具 |
