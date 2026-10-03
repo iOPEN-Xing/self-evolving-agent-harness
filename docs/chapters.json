@@ -13,7 +13,8 @@
         "lab01-reader-05",
         "lab01-reader-07",
         "lab01-reader-09",
-        "lab01-reader-11"
+        "lab01-reader-11",
+        "lab01-knowledge"
       ]
     },
     {
@@ -28,7 +29,8 @@
         "lab02-reader-07",
         "lab02-reader-09",
         "lab02-reader-11",
-        "lab02-reader-13"
+        "lab02-reader-13",
+        "lab02-knowledge"
       ]
     },
     {
@@ -41,7 +43,8 @@
       "notebook_cells": [
         "lab03-reader-05",
         "lab03-reader-07",
-        "lab03-reader-09"
+        "lab03-reader-09",
+        "lab03-knowledge"
       ]
     },
     {
@@ -55,7 +58,8 @@
         "lab04-reader-03",
         "lab04-reader-05",
         "lab04-reader-07",
-        "lab04-reader-09"
+        "lab04-reader-09",
+        "lab04-knowledge"
       ]
     },
     {
@@ -69,7 +73,8 @@
         "lab05-reader-03",
         "lab05-reader-05",
         "lab05-reader-07",
-        "lab05-reader-09"
+        "lab05-reader-09",
+        "lab05-knowledge"
       ]
     },
     {
@@ -83,7 +88,8 @@
         "lab06-reader-03",
         "lab06-reader-05",
         "lab06-reader-07",
-        "lab06-reader-09"
+        "lab06-reader-09",
+        "lab06-knowledge"
       ]
     },
     {
@@ -97,7 +103,8 @@
         "lab07-reader-05",
         "lab07-reader-07",
         "lab07-reader-09",
-        "lab07-creator-init-code"
+        "lab07-creator-init-code",
+        "lab07-knowledge"
       ]
     },
     {
@@ -112,7 +119,8 @@
         "lab08-reader-05",
         "lab08-reader-07",
         "lab08-reader-09",
-        "lab08-reader-11"
+        "lab08-reader-11",
+        "lab08-knowledge"
       ]
     },
     {
@@ -126,7 +134,8 @@
         "lab09-reader-03",
         "lab09-reader-05",
         "lab09-reader-07",
-        "lab09-reader-09"
+        "lab09-reader-09",
+        "lab09-knowledge"
       ]
     },
     {
