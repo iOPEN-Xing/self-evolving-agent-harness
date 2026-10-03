@@ -81,7 +81,7 @@ class ObservationTools:
             payload.update(scope=scope, data=o['metrics'][scope])
         else:
             payload['data'] = o[{'check_deployment': 'deployment', 'read_config': 'config', 'query_logs': 'logs'}[name]]
-        self.audit.append({'tool': name, 'arguments': arguments, 'observation': payload})
+        self.audit.append(copy.deepcopy({'tool': name, 'arguments': arguments, 'observation': payload}))
         return payload
 
 

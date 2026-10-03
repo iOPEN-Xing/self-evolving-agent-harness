@@ -1,6 +1,6 @@
 import pytest
 
-from shift.runtime import build_review_input, run_shift
+from shift.runtime import ObservationTools, build_review_input, run_shift
 
 
 def turn(prompt, ref, dispatch, context, messages):
@@ -80,3 +80,14 @@ def test_archived_context_contains_only_history_seen_at_that_turn(tmp_path):
     assert first['phase_context']['prior_records'] == []
     assert len(second['phase_context']['prior_records']) == 1
     assert second['phase_context']['prior_records'][0]['logical_time'] == 5
+
+
+def test_tool_receipts_cannot_be_changed_by_mutating_return_value():
+    audit = []
+    arguments = dict(service="search-api", logical_time=5, scope="overall")
+    result = ObservationTools("training", 5, audit)("read_metrics", arguments)
+    original_rate = result['data']['timeout_rate']
+    result['data']['timeout_rate'] = 999
+    arguments['service'] = 'modified'
+    assert audit[0]['arguments']['service'] == 'search-api'
+    assert audit[0]['observation']['data']['timeout_rate'] == original_rate

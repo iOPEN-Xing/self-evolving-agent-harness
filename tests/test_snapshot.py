@@ -150,3 +150,19 @@ def test_restore_into_wal_database(snapshot, tmp_path):
     snapshot.restore_snapshot(live, "v0", tmp_path / "snapshots")
     assert reader.execute("SELECT id FROM sessions").fetchall() == [("saved",)]
     reader.close()
+
+
+def test_same_message_count_with_changed_content_cannot_activate(snapshot, tmp_path, monkeypatch):
+    live = tmp_path / "state.db"
+    db = seed(live)
+    snapshot.take_snapshot(db, "v0", "skill", tmp_path / "snapshots")
+    db.close()
+    before = live.read_bytes()
+    class LossyDB(SQLiteSessions):
+        def import_sessions(self, rows):
+            rows[0]["messages"][0]["content"] = "lost original content"
+            return super().import_sessions(rows)
+    monkeypatch.setitem(sys.modules, "hermes_state", SimpleNamespace(SessionDB=LossyDB))
+    with pytest.raises(ValueError):
+        snapshot.restore_snapshot(live, "v0", tmp_path / "snapshots")
+    assert live.read_bytes() == before

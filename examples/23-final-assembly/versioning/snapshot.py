@@ -45,6 +45,12 @@ def _digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def _messages(rows):
+    # 数据库可能重新分配 message.id；核对持久化的消息语义而非自增主键。
+    fields = ('role', 'content', 'tool_calls', 'tool_call_id', 'tool_name')
+    return {r['id']: [{field: m.get(field) for field in fields} for m in r['messages']] for r in rows}
+
+
 def _read_snapshot(root, label):
     path = _directory(root, label)
     names = ("manifest.json", "state_snapshot.json", "SKILL.md")
@@ -95,6 +101,7 @@ def restore_snapshot(db_path: Path, version_label: str, snapshot_dir: Path) -> d
     """导入隔离 SQLite 数据库并核对数量；失败不触碰现有库或 WAL/SHM。"""
     rows, _ = _read_snapshot(snapshot_dir, version_label)
     expected = _session_counts(rows)
+    expected_messages = _messages(rows)
     db_path = Path(db_path)
     if db_path.is_symlink():
         raise ValueError("恢复目标不能是符号链接")
@@ -110,8 +117,9 @@ def restore_snapshot(db_path: Path, version_label: str, snapshot_dir: Path) -> d
             if (not isinstance(result, dict) or result.get("ok") is False or result.get("errors")
                     or result.get("imported") != len(rows) or result.get("skipped", 0) != 0):
                 raise ValueError("会话导入失败或不完整，保留原数据库")
-            if _session_counts(db.export_all()) != expected:
-                raise ValueError("恢复后的会话编号或消息数量不一致")
+            restored = db.export_all()
+            if _session_counts(restored) != expected or _messages(restored) != expected_messages:
+                raise ValueError("恢复后的会话编号、消息数量或内容不一致")
         finally:
             db.close()
         source = sqlite3.connect(staged_path)
