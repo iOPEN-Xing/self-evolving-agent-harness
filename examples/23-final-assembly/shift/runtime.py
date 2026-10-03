@@ -154,7 +154,7 @@ def run_shift(*, scenario_id, ticks, run_turn, run_id, shift_id, session_id,
         context = dict(run_id=run_id, shift_id=shift_id, incident_id=state['incident_id'],
                        state=state['state'], logical_time=tick, service=observed['service'],
                        recovery_window_minutes=10,
-                       event=event, prior_records=state['records'],
+                       event=event, prior_records=copy.deepcopy(state['records']),
                        investigation_budget_remaining=investigation_budget-state['investigation_calls'])
         prompt = ('请执行本轮值守：按当前 Skill 自行选择只读查询，给出有观测依据的判断与下一状态建议。'
                   '时间单位为逻辑分钟，窗口由教学时钟模拟推进。\n' + json.dumps(context, ensure_ascii=False))
@@ -214,5 +214,5 @@ def build_review_input(sessions, state):
                 final_state=state['state'], service_recovered=bool(state.get('service_recovered')),
                 open_questions=copy.deepcopy(state.get('open_questions',[])), unresolved=(
                     [state['incident_id']] if state['sensor'].get('active') else []),
-                complete=bool(sessions) and all(s['expected_turns'] > 0 and s['num_turns']==s['expected_turns'] and not s.get('budget_exhausted') for s in sessions) and all(t['stop_reason']=='final_answer' and t.get('assessment')
+                complete=bool(sessions) and all(s['expected_turns'] > 0 and s['num_turns']==s['expected_turns'] and not s.get('budget_exhausted') for s in sessions) and all(t['stop_reason']=='final_answer' and not t.get('tool_errors') and t.get('assessment')
                              and t['observation_reads'] for s in sessions for t in s['turns']))

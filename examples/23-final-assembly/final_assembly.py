@@ -247,7 +247,7 @@ class GlmToolLoopAgent:
             turn['messages'] = messages
             save_json(path,turn)
             if turn.get('assessment'):
-                turn['stop_reason'] = 'final_answer'
+                turn['stop_reason'] = 'tool_error' if turn['tool_errors'] else 'final_answer'
                 break
             if len(turn['tool_calls']) >= self.max_tool_calls:
                 turn['stop_reason'] = 'tool_budget'
@@ -568,6 +568,10 @@ def main():
     evidence(8,dict(pull=result,skill_path=str(c_path),sha256=sha256(pulled_content),
                    hash_matches_adopted=True,execution_ok=c_execution_ok,
                    session=c_session,feedback=c_feedback))
+    if not review['complete'] or not c_execution_ok or not c_feedback['complete']:
+        raise RuntimeError('前台值守或第三实例验收不完整；保留已作决策，运行标记为 INCOMPLETE')
+    if not source.unchanged(source_manifest, REPO_ROOT):
+        raise RuntimeError('后续验收期间源码发生变化，运行不能标记为 COMPLETE')
 
     section(9, "总结与诚实边界")
     stance = (

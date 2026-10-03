@@ -72,3 +72,11 @@ def test_end_records_last_executed_tick_on_budget_stop(tmp_path):
     session, state = run_shift(**args(tmp_path), ticks=[0, 5], max_patrol_rounds=1, end_shift=True)
     assert session["budget_exhausted"]
     assert state["transitions"][-1]["logical_time"] == 0
+
+
+def test_archived_context_contains_only_history_seen_at_that_turn(tmp_path):
+    session, _ = run_shift(**args(tmp_path), ticks=[5, 10])
+    first, second = session['turns']
+    assert first['phase_context']['prior_records'] == []
+    assert len(second['phase_context']['prior_records']) == 1
+    assert second['phase_context']['prior_records'][0]['logical_time'] == 5
