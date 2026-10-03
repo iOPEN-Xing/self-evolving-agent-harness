@@ -170,3 +170,18 @@ def test_same_message_count_with_changed_content_cannot_activate(snapshot, tmp_p
     with pytest.raises(ValueError):
         snapshot.restore_snapshot(live, "v0", tmp_path / "snapshots")
     assert live.read_bytes() == before
+
+
+def test_completed_backup_is_not_reported_as_timeout_after_commit(snapshot, tmp_path, monkeypatch):
+    source = seed(tmp_path / 'source.db', 'saved')
+    snapshot.take_snapshot(source, 'v0', 'skill', tmp_path / 'snapshots')
+    source.close()
+    live = tmp_path / 'state.db'
+    seed(live).close()
+    clock = iter([0, 10])
+    monkeypatch.setattr(snapshot.time, 'monotonic', lambda: next(clock, 10))
+    result = snapshot.restore_snapshot(live, 'v0', tmp_path / 'snapshots')
+    assert result['sessions'] == 1
+    db = SQLiteSessions(live)
+    assert db.export_all()[0]['id'] == 'saved'
+    db.close()

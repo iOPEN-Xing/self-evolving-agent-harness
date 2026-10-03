@@ -132,7 +132,8 @@ def restore_snapshot(db_path: Path, version_label: str, snapshot_dir: Path) -> d
                 deadline = time.monotonic() + 5
 
                 def progress(status, remaining, total):
-                    if time.monotonic() > deadline:
+                    # SQLITE_DONE 回调发生在提交之后，不能此时再谎报恢复失败。
+                    if status != sqlite3.SQLITE_DONE and time.monotonic() > deadline:
                         raise TimeoutError("恢复事务超时；请确认所有数据库写入方已停止")
 
                 # backup 在目标库中使用事务，兼容 WAL；不删除主库/侧文件。
